@@ -1,0 +1,19 @@
+# Environment variables - copy from .env.example and customize
+.env
+.env.local
+.env.*.local
+
+# CDK
+cdk.out/
+*.js
+*.js.map
+*.d.ts
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

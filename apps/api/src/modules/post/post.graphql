@@ -1,0 +1,148 @@
+# Post Types
+enum PostType {
+  TEXT
+  LINK
+  IMAGE
+  VIDEO
+  POLL
+  JSON
+}
+
+enum ContentModerationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSING
+}
+
+# Post Type
+type Post {
+  id: ID!
+  posturn: String!
+  title: String!
+  body: String
+  bodyJson: JSON
+  postType: PostType!
+  url: String
+  thumbnailUrl: String
+  upvotes: Int!
+  downvotes: Int!
+  commentCount: Int!
+  shareCount: Int!
+  gilded: Boolean!
+  gildings: JSON
+  isStickied: Boolean!
+  isLocked: Boolean!
+  isNsfw: Boolean!
+  isSpoiler: Boolean!
+  isArchived: Boolean!
+  moderationStatus: ContentModerationStatus!
+  moderationResults: JSON
+  moderationFailureReason: String
+  isPublic: Boolean!
+  isDeleted: Boolean!
+  
+  # Relationships
+  userurn: String!
+  user: User!
+  parentPostUrn: String
+  parentPost: Post
+  assets: [Asset!]!
+  tags: [Tag!]!
+  replies: [Post!]!
+  
+  # Computed fields
+  score: Int!
+  hotScore: Float!
+  canEdit: Boolean!
+  isPublished: Boolean!
+  isComment: Boolean!
+  hasReplies: Boolean!
+  isModerated: Boolean!
+  
+  # Timestamps
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+# Post Input Types
+input CreatePostInput {
+  title: String!
+  body: String
+  bodyJson: JSON
+  postType: PostType!
+  url: String
+  thumbnailUrl: String
+  isNsfw: Boolean = false
+  isSpoiler: Boolean = false
+  isPublic: Boolean = true
+  parentPostUrn: String
+  assetUrns: [String!]
+  tags: [String!]
+  userurn: String!
+}
+
+input UpdatePostInput {
+  posturn: String!
+  title: String
+  body: String
+  bodyJson: JSON
+  url: String
+  thumbnailUrl: String
+  isNsfw: Boolean
+  isSpoiler: Boolean
+  isPublic: Boolean
+  tags: [String!]
+  userurn: String!
+}
+
+input PostFilter {
+  postType: PostType
+  moderationStatus: ContentModerationStatus
+  isPublic: Boolean
+  userurn: String
+  parentPostUrn: String
+  hasParent: Boolean
+  isDeleted: Boolean
+  search: String
+}
+
+input VoteInput {
+  vote: Int!
+}
+
+# Post Response Types
+type PostEdge implements Edge {
+  cursor: String!
+  node: Post!
+}
+
+type PostConnection implements Connection {
+  edges: [PostEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+# Post Queries (to be extended in main Query type)
+extend type Query {
+  post(posturn: String!, userurn: String): Post
+  postByUrn(posturn: String!, userId: String): Post
+  posts(
+    filter: PostFilter
+    pagination: PaginationInput
+    sort: SortInput
+    userId: String
+  ): PostConnection!
+  postsByTags(tags: [String!]!, userId: String): [Post!]!
+  postsByUser(userurn: String!): [Post!]!
+  postReplies(posturn: String!): [Post!]!
+}
+
+# Post Mutations (to be extended in main Mutation type)
+extend type Mutation {
+  createPost(createPostInput: CreatePostInput!): Post!
+  updatePost(updatePostInput: UpdatePostInput!): Post!
+  deletePost(posturn: String!, userurn: String!): Boolean!
+  votePost(posturn: String!, vote: Int!, userurn: String!): Post!
+  publishPost(posturn: String!, userurn: String!): Post!
+}

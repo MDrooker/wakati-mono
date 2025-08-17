@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  rockwell-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.slim  # Use optimized Dockerfile for better performance
+    container_name: rockwell-api-local
+    env_file:
+      - .env  # Load environment variables from .env file
+    ports:
+      - '8080:8080'
+    volumes:
+      # Mount uploads directory for local development
+      - ./uploads:/usr/src/app/uploads
+      # Mount logs directory if it exists
+      - ./logs:/usr/src/app/logs
+    environment:
+      # Override NODE_ENV for local development
+      - NODE_ENV=development
+    healthcheck:
+      test: ["CMD", "./docker-health-check.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - rockwell-network
+
+  # Optional: Add a PostgreSQL database for local development
+  # Uncomment if you want to run a local database instead of using external services
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: rockwell-postgres-local
+  #   environment:
+  #     POSTGRES_DB: nesting
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #   ports:
+  #     - '5432:5432'
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - rockwell-network
+
+  # Optional: Add Redis for caching
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: rockwell-redis-local
+  #   ports:
+  #     - '6379:6379'
+  #   volumes:
+  #     - redis_data:/data
+  #   networks:
+  #     - rockwell-network
+
+networks:
+  rockwell-network:
+    driver: bridge
+
+# volumes:
+#   postgres_data:
+#   redis_data:

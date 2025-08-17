@@ -1,0 +1,12 @@
+onlyBuiltDependencies:
+  - '@apollo/protobufjs'
+  - '@contrast/fn-inspect'
+  - '@nestjs/core'
+  - '@newrelic/fn-inspect'
+  - '@newrelic/native-metrics'
+  - '@scarf/scarf'
+  - '@swc/core'
+  - esbuild
+  - protobufjs
+  - sharp
+  - unrs-resolver

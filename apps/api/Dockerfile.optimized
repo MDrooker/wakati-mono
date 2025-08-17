@@ -1,0 +1,215 @@
+# =================================================================
+# MULTI-STAGE DOCKERFILE FOR WAKATI API
+# Optimized for production size and performance
+# =================================================================
+
+# =================================================================
+# Stage 1: Base Image with pnpm
+# =================================================================
+FROM node:20-alpine AS base
+
+# Install pnpm globally
+RUN npm install -g pnpm@10.13.1
+
+# Set working directory
+WORKDIR /app
+
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs \
+    && adduser --system --uid 1001 nestjs
+
+# =================================================================
+# Stage 2: Dependencies Installation
+# =================================================================
+FROM base AS deps
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml ./
+
+# Copy workspace package.json files  
+COPY apps/api/package.json ./apps/api/
+
+# Install dependencies with pnpm
+# Use frozen lockfile for reproducible builds
+# Install only production dependencies in separate layer for caching
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm fetch --frozen-lockfile
+
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile --offline
+
+# =================================================================
+# Stage 3: Build Stage
+# =================================================================
+FROM base AS builder
+
+# Install build dependencies for native modules
+RUN apk add --no-cache \
+    build-base \
+    python3 \
+    make \
+    g++ \
+    vips-dev \
+    libexif-dev \
+    imagemagick-dev \
+    libheif-dev \
+    ffmpeg-dev
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
+
+# Copy source code
+COPY apps/api ./apps/api
+COPY turbo.json ./
+
+# Set build environment
+ENV NODE_ENV=production
+ENV TURBO_TELEMETRY_DISABLED=1
+
+# Build the application
+RUN pnpm --filter=rockwell-api build
+
+# Generate GraphQL types and bundle schema files
+RUN cd apps/api && \
+    pnpm types && \
+    pnpm code && \
+    pnpm bundle
+
+# Remove source maps and development files to reduce size
+RUN find ./apps/api/dist -name "*.map" -delete && \
+    find ./apps/api/dist -name "*.d.ts" -delete
+
+# =================================================================
+# Stage 4: Production Dependencies Only
+# =================================================================
+FROM base AS prod-deps
+
+# Install minimal build tools for native modules
+RUN apk add --no-cache \
+    build-base \
+    python3 \
+    make \
+    g++ \
+    vips-dev \
+    libexif-dev
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml ./
+COPY apps/api/package.json ./apps/api/
+
+# Install only production dependencies
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm fetch --frozen-lockfile --prod
+
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile --offline --prod
+
+# Remove build dependencies
+RUN apk del build-base python3 make g++ vips-dev libexif-dev
+
+# Remove unnecessary files from node_modules to reduce size
+RUN find ./node_modules -name "*.md" -delete && \
+    find ./node_modules -name "*.txt" -delete && \
+    find ./node_modules -name "LICENSE*" -delete && \
+    find ./node_modules -name "CHANGELOG*" -delete && \
+    find ./node_modules -name "*.map" -delete && \
+    find ./node_modules -name "*.d.ts" -delete && \
+    find ./node_modules -type d -name "test" -exec rm -rf {} + 2>/dev/null || true && \
+    find ./node_modules -type d -name "tests" -exec rm -rf {} + 2>/dev/null || true && \
+    find ./node_modules -type d -name "__tests__" -exec rm -rf {} + 2>/dev/null || true && \
+    find ./node_modules -type d -name "docs" -exec rm -rf {} + 2>/dev/null || true && \
+    find ./node_modules -type d -name ".github" -exec rm -rf {} + 2>/dev/null || true && \
+    find ./node_modules -type d -name "coverage" -exec rm -rf {} + 2>/dev/null || true
+
+# =================================================================
+# Stage 5: Runtime Image (Final Stage)
+# =================================================================
+FROM node:20-alpine AS runtime
+
+# Install system dependencies needed for the application
+RUN apk add --no-cache \
+    dumb-init \
+    tini \
+    curl \
+    # Runtime libraries for image/video processing
+    vips \
+    libexif \
+    ffmpeg \
+    ffmpeg-libs \
+    imagemagick \
+    imagemagick-libs \
+    libheif \
+    # Additional multimedia codecs
+    x264-libs \
+    x265-libs \
+    && rm -rf /var/cache/apk/*
+
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs \
+    && adduser --system --uid 1001 nestjs
+
+# Set working directory
+WORKDIR /app
+
+# Copy production dependencies
+COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
+
+# Copy built application
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./apps/api/dist
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/gqlbundle ./apps/api/gqlbundle
+
+# Copy essential configuration files
+COPY --chown=nestjs:nodejs apps/api/package.json ./apps/api/
+COPY --chown=nestjs:nodejs apps/api/docker-health-check.sh ./apps/api/
+COPY --chown=nestjs:nodejs apps/api/newrelic.js ./apps/api/
+
+# Make health check script executable
+RUN chmod +x ./apps/api/docker-health-check.sh
+
+# Create directories with proper permissions
+RUN mkdir -p /app/uploads/assets && \
+    mkdir -p /tmp/conversions && \
+    chown -R nestjs:nodejs /app/uploads && \
+    chown -R nestjs:nodejs /tmp/conversions && \
+    chmod -R 755 /app/uploads && \
+    chmod -R 755 /tmp/conversions
+
+# Set production environment
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV OTEL_SDK_DISABLED=false
+
+# Security: Don't run as root
+USER nestjs
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD ./apps/api/docker-health-check.sh || exit 1
+
+# Use tini as init system for proper signal handling
+ENTRYPOINT ["tini", "--"]
+
+# Start the application
+CMD ["node", "apps/api/dist/main.js"]
+
+# =================================================================
+# Multi-architecture support
+# =================================================================
+# Build with: docker buildx build --platform linux/amd64,linux/arm64
+
+# =================================================================
+# Image Metadata
+# =================================================================
+LABEL maintainer="Wakati Team"
+LABEL version="1.0.0"
+LABEL description="Optimized Wakati API container"
+LABEL org.opencontainers.image.title="Wakati API"
+LABEL org.opencontainers.image.description="Content Management & Asset Platform API"
+LABEL org.opencontainers.image.version="1.0.0"
+LABEL org.opencontainers.image.source="https://github.com/your-org/wakati-mono"

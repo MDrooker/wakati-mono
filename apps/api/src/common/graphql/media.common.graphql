@@ -1,0 +1,45 @@
+scalar DateTime
+
+type RelatedMediaItem {
+  name: String
+  type: String
+  aspectRatio: String
+  height: Int
+  width: Int
+  url: String
+}
+
+input RelatedMediaItemInput {
+  name: String
+  type: String
+  aspectRatio: String
+  height: Int
+  width: Int
+  url: String
+}
+
+type RelatedMedia {
+  name: String
+  platform: String
+  description: String
+  media: RelatedMediaItem
+}
+
+input RelatedMediaInput {
+  name: String
+  platform: String
+  description: String
+  media: RelatedMediaItemInput
+}
+
+type MediaAsset {
+  media: [RelatedMedia]
+  thumbnail: RelatedMediaItem
+  default: RelatedMediaItem
+}
+
+input MediaAssetInput {
+  media: [RelatedMediaInput]
+  thumbnail: RelatedMediaItemInput
+  default: RelatedMediaItemInput
+}

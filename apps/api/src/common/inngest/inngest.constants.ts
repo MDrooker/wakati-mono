@@ -1,0 +1,1 @@
+export const INNGEST_OPTIONS = 'INNGEST_OPTIONS';

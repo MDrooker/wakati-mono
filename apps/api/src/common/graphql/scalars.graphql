@@ -1,0 +1,5 @@
+# Date scalar for handling timestamps
+scalar Date
+
+# JSON scalar for handling metadata and AI analysis
+scalar JSON

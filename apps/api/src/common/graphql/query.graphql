@@ -1,0 +1,5 @@
+# Root Query type
+type Query {
+  # Health check
+  health: String!
+}

@@ -1,0 +1,20 @@
+scalar JSON 
+type Operation {
+   status: Boolean
+   name: String
+   type: String
+   message: JSON
+}
+input CreateOperationRequestInput {
+   type: String
+   payload: JSON
+   value: String
+}
+
+type Query {
+   operation: [Operation]
+   getServerTime: Operation
+}
+type Mutation {
+   createOperationRequest(createOperationRequestInput: CreateOperationRequestInput): Operation
+}

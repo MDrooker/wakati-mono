@@ -1,0 +1,37 @@
+name: Build and Deploy Dev Image
+
+on:
+  push:
+    branches:
+      - development
+
+env:
+  IMAGE_NAME: matthewjon/sparrow-api
+  DOCKERFILE_DIR: apps/api # Update this to the subdirectory
+  WEBHOOK_URL: ${{ secrets.PORTAINER_WEBHOOK_URL }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker Image
+        run: |
+          docker build -t $IMAGE_NAME:dev ./${DOCKERFILE_DIR}
+
+      - name: Push Docker Image
+        run: |
+          docker push $IMAGE_NAME:dev
+
+      - name: Trigger Portainer Webhook
+        run: |
+          curl -X POST $WEBHOOK_URL

@@ -1,0 +1,57 @@
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+
+interface Error {
+  message: String!
+  code: String!
+}
+
+
+type FieldError {
+  field: String!
+  message: String!
+}
+
+enum OptionTypeEnum {
+  IMAGE
+  TEXT
+  BUTTON
+}
+
+
+type RichLanguageItemSchemaTranslation {
+  language: String
+  value: String
+}
+
+type RichLanguageItemSchema {
+  default: String
+  translations: [RichLanguageItemSchemaTranslation]
+}
+
+
+
+input RichLanguageItemSchemaInput {
+  default: String!
+  translations: [RichLanguageItemSchemaTranslationInput!]
+}
+
+input RichLanguageItemSchemaTranslationInput {
+  language: String!
+  value: String!
+}
+
+
+
+type Metadata {
+  namespace: String
+  key: String
+  value: String
+}
+input MetadataInput {
+  key: String
+  value: String
+}

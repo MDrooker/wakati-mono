@@ -1,0 +1,10 @@
+
+type Location {
+  type: String
+  coordinates: [Float]
+}
+
+input LocationInput {
+  type: String
+  coordinates: [Float]
+}

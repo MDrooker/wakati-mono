@@ -1,0 +1,164 @@
+# =================================================================
+# DOCKERIGNORE FOR ROCKWELL API
+# Reduces build context size and improves build performance
+# =================================================================
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+coverage/
+
+# Development files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+*.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Cache directories
+.npm/
+.eslintcache
+.cache/
+.parcel-cache/
+.nyc_output/
+
+# Temporary folders
+tmp/
+temp/
+.tmp/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+CHANGELOG.md
+LICENSE
+*.md
+docs/
+
+# Testing
+test/
+tests/
+__tests__/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+jest.config.*
+coverage/
+
+# Development tools
+.husky/
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+
+# Docker
+Dockerfile*
+.dockerignore
+docker-compose*.yml
+
+# Uploads (will be mounted as volume in production)
+uploads/
+
+# Generated files
+generated/
+codegen.ts
+graph.json
+
+# Archives
+*.tar
+*.tar.gz
+*.zip
+*.rar
+
+# Dependency lock files (keep pnpm-lock.yaml but ignore others)
+yarn.lock
+package-lock.json
+
+# TypeScript
+*.tsbuildinfo
+
+# ESLint
+.eslintrc*
+eslint.config.*
+
+# Prettier
+.prettierrc*
+prettier.config.*
+
+# Other config files
+.editorconfig
+.nvmrc
+.node-version
+
+# Backup files
+*.bak
+*.backup
+
+# Archive directory
+_archive/
+
+# Thunder client (API testing)
+thunder-tests/
+
+# Local development files
+.env.example
+docker-compose.conversion.yml
+clean.sh
+build-docker.sh
+
+# CDK and infrastructure
+infrastructure/
+cdk.out/
+*.assets.json
+*.template.json
+
+# Video conversion temp files
+conversions/

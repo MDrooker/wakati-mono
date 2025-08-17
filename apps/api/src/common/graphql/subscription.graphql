@@ -1,0 +1,14 @@
+# Subscriptions for real-time updates
+type Subscription {
+  # Upload status changes
+  uploadStatusChanged(userId: ID): UserUpload!
+  
+  # Package status changes
+  packageStatusChanged(userId: ID): Package!
+  
+  # New uploads in collection
+  newUploadInCollection(collectionId: ID!): UserUpload!
+  
+  # Curation completed
+  curationCompleted(userId: ID): UserUpload!
+}

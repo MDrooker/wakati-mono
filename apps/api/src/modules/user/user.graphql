@@ -1,0 +1,90 @@
+# User Type
+type User {
+  id: ID!
+  userurn: String!
+  tenanturn: String
+  email: String!
+  firstName: String!
+  lastName: String!
+  displayName: String
+  avatarUrl: String
+  bio: String
+  phoneNumber: String
+  dateOfBirth: Date
+  location: String
+  website: String
+  isVerified: Boolean!
+  isActive: Boolean!
+  lastLoginAt: Date
+  supabaseUserId: String
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+# User Input Types
+input CreateUserInput {
+  email: String!
+  firstName: String!
+  lastName: String!
+  displayName: String
+  avatarUrl: String
+  bio: String
+  phoneNumber: String
+  dateOfBirth: Date
+  location: String
+  website: String
+  supabaseUserId: String
+}
+
+input UpdateUserInput {
+  id: ID!
+  email: String
+  firstName: String
+  lastName: String
+  displayName: String
+  avatarUrl: String
+  bio: String
+  phoneNumber: String
+  dateOfBirth: Date
+  location: String
+  website: String
+}
+
+input UserFilter {
+  isVerified: Boolean
+  search: String
+}
+
+# User Response Types
+type UserEdge implements Edge {
+  cursor: String!
+  node: User!
+}
+
+type UserConnection implements Connection {
+  edges: [UserEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+# User Queries (to be extended in main Query type)
+extend type Query {
+  user(id: ID!, tenanturn: String): User
+  userByEmail(email: String!, tenanturn: String): User
+  userByUserurn(userurn: String!, tenanturn: String): User
+  users(
+    filter: UserFilter
+    pagination: PaginationInput
+    sort: SortInput
+    tenanturn: String
+  ): UserConnection!
+}
+
+# User Mutations (to be extended in main Mutation type)
+extend type Mutation {
+  createUser(createUserInput: CreateUserInput!, tenanturn: String): User!
+  updateUser(updateUserInput: UpdateUserInput!, tenanturn: String): User!
+  removeUser(id: ID!, tenanturn: String): Boolean!
+  verifyUser(id: ID!, tenanturn: String): User!
+  unverifyUser(id: ID!, tenanturn: String): User!
+}

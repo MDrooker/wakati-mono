@@ -1,0 +1,30 @@
+# Upload status enum
+enum UploadStatus {
+  PENDING
+  PROCESSING
+  APPROVED
+  REJECTED
+}
+
+# Asset type enum
+enum AssetType {
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+}
+
+# Package status enum
+enum PackageStatus {
+  DRAFT
+  UPLOAD
+  REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+# Sort direction enum
+enum SortDirection {
+  ASC
+  DESC
+}
