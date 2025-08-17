@@ -40,7 +40,7 @@ process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
 /**
  * Sets up Swagger documentation for the API
  * @param app - The NestJS application instance
- * @param system - The system name (e.g., 'rockwell')
+ * @param system - The system name (e.g., 'wakati')
  * @param product - The product name (e.g., 'api')
  */
 function setupSwaggerDocumentation(
@@ -92,8 +92,9 @@ function setupSwaggerDocumentation(
 }
 
 async function bootstrap() {
+
   try {
-    logger.log('🚀 Starting Rockwell API server...');
+    logger.log(`🚀 Starting ${process.env.SYSTEM} API server...`);
     logger.log('Environment variables check:');
     logger.log(`- NODE_ENV: ${process.env.NODE_ENV}`);
     logger.log(`- PORT: ${process.env.PORT || 'not set'}`);
@@ -134,37 +135,17 @@ async function bootstrap() {
             : ['error', 'warn', 'log'],
       },
     );
+    const config = app.get(ConfigService);
+    const port = config.get<string>('PORT') || '8080';
+    const system = config.get<string>('SYSTEM') || 'wakati';
+    const product = config.get<string>('PRODUCT') || 'api';
     logger.log('✅ NestJS application created successfully');
 
     // Capture raw body for webhook signature verification. This attaches a
     // `rawBody` Buffer to the incoming request object. Mux requires the exact
     // raw payload when verifying signatures.
     const fastifyInstance = app.getHttpAdapter().getInstance();
-    // fastifyInstance.addHook('onRequest', async (request: any, reply: any) => {
-    //   // Only capture raw body for webhook endpoints to avoid performance impact
-    //   if (request.url?.includes('/webhook') || request.url?.includes('/inngest')) {
-    //     const chunks: Buffer[] = [];
-    //     request.raw.on('data', (chunk: Buffer) => {
-    //       chunks.push(chunk);
-    //     });
 
-    //     return new Promise<void>((resolve, reject) => {
-    //       request.raw.on('end', () => {
-    //         try {
-    //           request.rawBody = Buffer.concat(chunks);
-    //           resolve();
-    //         } catch (error) {
-    //           request.rawBody = null;
-    //           resolve(); // Don't reject, just continue without raw body
-    //         }
-    //       });
-    //       request.raw.on('error', () => {
-    //         request.rawBody = null;
-    //         resolve(); // Don't reject, just continue without raw body
-    //       });
-    //     });
-    //   }
-    // });
 
     logger.log('🌐 Configuring CORS...');
     app.enableCors({
@@ -202,12 +183,10 @@ async function bootstrap() {
 
     // Get the InngestService and functions from global registry
     logger.log('📋 Getting services and configuration...');
+
     const inngestService = app.get(InngestService);
     const globalFunctions = GlobalInngestFunctionsRegistry.getFunctions();
-    const config = app.get(ConfigService);
-    const port = config.get<string>('PORT') || '8080';
-    const system = config.get<string>('SYSTEM') || 'rockwell';
-    const product = config.get<string>('PRODUCT') || 'api';
+
     logger.log(`✅ Configuration loaded - System: ${system}, Product: ${product}, Port: ${port}`);
 
     // app.useGlobalPipes(

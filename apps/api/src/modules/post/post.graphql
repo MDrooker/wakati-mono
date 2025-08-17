@@ -47,8 +47,8 @@ type Post {
   user: User!
   parentPostUrn: String
   parentPost: Post
-  assets: [Asset!]!
-  tags: [Tag!]!
+  # assets: [Asset!]!
+  # tags: [Tag!]!
   replies: [Post!]!
   
   # Computed fields

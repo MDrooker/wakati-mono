@@ -99,36 +99,36 @@ const OpenTelemetryModuleConfig = OpenTelemetryModule.forRootAsync({
     SupabaseModule,
     AuthModule,
     TypeORMDatabaseModule,
-    GraphQLModule.forRootAsync<YogaDriverConfig>({
-      driver: YogaDriver,
-      useFactory: () => {
-        logger.log('🎯 Configuring GraphQL with Yoga driver...');
-        return {
-          typePaths: ['./**/*.graphql'],
-          plugins: [
-            // Use the SSE plugin for subscriptions
-            // useGraphQLSSE(),
-            // useLogger({
-            //     logFn: (eventName, args) => {
-            //         // Event could be execute-start / execute-end / subscribe-start / subscribe-end / etc.
-            //         // args will include the arguments passed to execute/subscribe (in case of "start" event) and additional result in case of "end" event.
-            //         console.log(eventName, args);
-            //     }
-            // })
-          ],
-          resolvers: {
-            JSON: GraphQLJSON,
-          },
-          context: ({ req, res }) => ({ req, res }),
-          typeDefs: [constraintDirectiveTypeDefs, DateTypeDefinition],
-          fieldResolverEnhancers: ['interceptors'],
-          transformSchema: (schema) => {
-            schema = constraintDirective()(schema);
-            return schema;
-          },
-        };
-      },
-    }),
+    // GraphQLModule.forRootAsync<YogaDriverConfig>({
+    //   driver: YogaDriver,
+    //   useFactory: () => {
+    //     logger.log('🎯 Configuring GraphQL with Yoga driver...');
+    //     return {
+    //       typePaths: ['./**/*.graphql'],
+    //       plugins: [
+    //         // Use the SSE plugin for subscriptions
+    //         // useGraphQLSSE(),
+    //         // useLogger({
+    //         //     logFn: (eventName, args) => {
+    //         //         // Event could be execute-start / execute-end / subscribe-start / subscribe-end / etc.
+    //         //         // args will include the arguments passed to execute/subscribe (in case of "start" event) and additional result in case of "end" event.
+    //         //         console.log(eventName, args);
+    //         //     }
+    //         // })
+    //       ],
+    //       resolvers: {
+    //         JSON: GraphQLJSON,
+    //       },
+    //       context: ({ req, res }) => ({ req, res }),
+    //       typeDefs: [constraintDirectiveTypeDefs, DateTypeDefinition],
+    //       fieldResolverEnhancers: ['interceptors'],
+    //       transformSchema: (schema) => {
+    //         schema = constraintDirective()(schema);
+    //         return schema;
+    //       },
+    //     };
+    //   },
+    // }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'client'),
       renderPath: '/client',
@@ -138,7 +138,7 @@ const OpenTelemetryModuleConfig = OpenTelemetryModule.forRootAsync({
     UtilitiesModule,
 
     OperationModule,
-    TenantModule,
+    // TenantModule,
     // UserModule,
     // PostModule,
   ],
