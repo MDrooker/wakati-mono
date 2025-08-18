@@ -1,3 +1,4 @@
+
 /*
  * -------------------------------------------------------
  * THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
@@ -40,41 +41,6 @@ export enum SortDirection {
     DESC = "DESC"
 }
 
-export enum ContentModerationStatus {
-    PENDING = "PENDING",
-    APPROVED = "APPROVED",
-    REJECTED = "REJECTED",
-    PROCESSING = "PROCESSING"
-}
-
-export enum CommentStatus {
-    ACTIVE = "ACTIVE",
-    HIDDEN = "HIDDEN",
-    DELETED = "DELETED",
-    PENDING_MODERATION = "PENDING_MODERATION"
-}
-
-export enum LiveStreamStatus {
-    IDLE = "IDLE",
-    CONNECTED = "CONNECTED",
-    RECORDING = "RECORDING",
-    ACTIVE = "ACTIVE",
-    DISCONNECTED = "DISCONNECTED",
-    DISABLED = "DISABLED"
-}
-
-export enum LiveStreamLatencyMode {
-    STANDARD = "STANDARD",
-    REDUCED = "REDUCED",
-    LOW = "LOW"
-}
-
-export enum LiveStreamProtocol {
-    RTMP = "RTMP",
-    RTMPS = "RTMPS",
-    SRT = "SRT"
-}
-
 export enum PostType {
     TEXT = "TEXT",
     LINK = "LINK",
@@ -84,39 +50,11 @@ export enum PostType {
     JSON = "JSON"
 }
 
-export enum TranscribeStatus {
+export enum ContentModerationStatus {
     PENDING = "PENDING",
-    PROCESSING = "PROCESSING",
-    COMPLETED = "COMPLETED",
-    FAILED = "FAILED"
-}
-
-export enum TranscribeLanguage {
-    EN_US = "EN_US",
-    EN_GB = "EN_GB",
-    ES_ES = "ES_ES",
-    ES_US = "ES_US",
-    FR_FR = "FR_FR",
-    DE_DE = "DE_DE",
-    IT_IT = "IT_IT",
-    PT_BR = "PT_BR",
-    JA_JP = "JA_JP",
-    KO_KR = "KO_KR",
-    ZH_CN = "ZH_CN"
-}
-
-export enum PollyVoiceId {
-    JOANNA = "JOANNA",
-    MATTHEW = "MATTHEW",
-    IVY = "IVY",
-    JUSTIN = "JUSTIN",
-    KENDRA = "KENDRA",
-    KIMBERLY = "KIMBERLY",
-    SALLI = "SALLI",
-    JOEY = "JOEY",
-    AMY = "AMY",
-    BRIAN = "BRIAN",
-    EMMA = "EMMA"
+    APPROVED = "APPROVED",
+    REJECTED = "REJECTED",
+    PROCESSING = "PROCESSING"
 }
 
 export class RichLanguageItemSchemaInput {
@@ -161,29 +99,6 @@ export class MediaAssetInput {
     default?: Nullable<RelatedMediaItemInput>;
 }
 
-export class CreatePackageInput {
-    name: string;
-    description?: Nullable<string>;
-    tags?: Nullable<string[]>;
-    metadata?: Nullable<JSON>;
-    status?: Nullable<PackageStatus>;
-}
-
-export class UpdatePackageInput {
-    name?: Nullable<string>;
-    description?: Nullable<string>;
-    tags?: Nullable<string[]>;
-    metadata?: Nullable<JSON>;
-    status?: Nullable<PackageStatus>;
-    isActive?: Nullable<boolean>;
-}
-
-export class PackageFilter {
-    status?: Nullable<PackageStatus>;
-    isActive?: Nullable<boolean>;
-    tags?: Nullable<string[]>;
-}
-
 export class PaginationInput {
     first?: Nullable<number>;
     after?: Nullable<string>;
@@ -194,119 +109,6 @@ export class PaginationInput {
 export class SortInput {
     field: string;
     direction?: Nullable<SortDirection>;
-}
-
-export class CreateUserUploadInput {
-    filename: string;
-    originalFileName: string;
-    mimeType: string;
-    fileSize: number;
-    storageKey: string;
-    bucket: string;
-    assetType: AssetType;
-    tags?: Nullable<string[]>;
-    metadata?: Nullable<JSON>;
-    description?: Nullable<string>;
-    packageId?: Nullable<string>;
-}
-
-export class UpdateUserUploadInput {
-    tags?: Nullable<string[]>;
-    metadata?: Nullable<JSON>;
-    description?: Nullable<string>;
-    packageId?: Nullable<string>;
-}
-
-export class UserUploadFilter {
-    status?: Nullable<UploadStatus>;
-    assetType?: Nullable<AssetType>;
-    packageId?: Nullable<string>;
-    tags?: Nullable<string[]>;
-}
-
-export class CreateAssetInput {
-    title?: Nullable<string>;
-    description?: Nullable<string>;
-    assetType: AssetType;
-    originalFileName: string;
-    fileSize?: Nullable<number>;
-    mimeType?: Nullable<string>;
-    storageKey?: Nullable<string>;
-    bucket?: Nullable<string>;
-    region?: Nullable<string>;
-    isPublic?: Nullable<boolean>;
-    tags?: Nullable<string[]>;
-    userurn: string;
-}
-
-export class UpdateAssetInput {
-    id: number;
-    title?: Nullable<string>;
-    description?: Nullable<string>;
-    isPublic?: Nullable<boolean>;
-    tags?: Nullable<string[]>;
-    userurn: string;
-}
-
-export class AssetFilter {
-    assetType?: Nullable<AssetType>;
-    moderationStatus?: Nullable<ContentModerationStatus>;
-    isPublic?: Nullable<boolean>;
-    userurn?: Nullable<string>;
-    search?: Nullable<string>;
-}
-
-export class CreateCollectionInput {
-    name: string;
-    description?: Nullable<string>;
-    isPublic?: Nullable<boolean>;
-}
-
-export class UpdateCollectionInput {
-    name?: Nullable<string>;
-    description?: Nullable<string>;
-    isPublic?: Nullable<boolean>;
-}
-
-export class CollectionFilter {
-    isPublic?: Nullable<boolean>;
-    userId?: Nullable<string>;
-}
-
-export class CreateCommentInput {
-    content: string;
-    asseturn: string;
-    userurn: string;
-    status?: Nullable<CommentStatus>;
-}
-
-export class UpdateCommentInput {
-    content?: Nullable<string>;
-    status?: Nullable<CommentStatus>;
-}
-
-export class CreateLiveStreamInput {
-    name: string;
-    description?: Nullable<string>;
-    location?: Nullable<string>;
-    scheduledTime?: Nullable<Date>;
-    latencyMode?: Nullable<LiveStreamLatencyMode>;
-    audioOnly?: Nullable<boolean>;
-    isRecordingEnabled?: Nullable<boolean>;
-    isPublic?: Nullable<boolean>;
-    userId: number;
-}
-
-export class UpdateLiveStreamInput {
-    name?: Nullable<string>;
-    description?: Nullable<string>;
-    location?: Nullable<string>;
-    scheduledTime?: Nullable<Date>;
-    status?: Nullable<LiveStreamStatus>;
-    latencyMode?: Nullable<LiveStreamLatencyMode>;
-    audioOnly?: Nullable<boolean>;
-    isRecordingEnabled?: Nullable<boolean>;
-    isPublic?: Nullable<boolean>;
 }
 
 export class CreateOperationRequestInput {
@@ -380,20 +182,6 @@ export class UpdateTenantInput {
 
 export class TenantFilter {
     search?: Nullable<string>;
-}
-
-export class CreateTranscribeInput {
-    textBlocks: string[];
-    language?: Nullable<TranscribeLanguage>;
-    voiceId?: Nullable<PollyVoiceId>;
-    userurn?: Nullable<string>;
-}
-
-export class UpdateTranscribeInput {
-    textBlocks?: Nullable<string[]>;
-    language?: Nullable<TranscribeLanguage>;
-    voiceId?: Nullable<PollyVoiceId>;
-    status?: Nullable<TranscribeStatus>;
 }
 
 export class CreateUserInput {
@@ -500,147 +288,6 @@ export class MediaAsset {
     default?: Nullable<RelatedMediaItem>;
 }
 
-export class Package {
-    __typename?: 'Package';
-    id: number;
-    packageurn: string;
-    name: string;
-    description?: Nullable<string>;
-    tags: string[];
-    metadata?: Nullable<JSON>;
-    status: PackageStatus;
-    isActive: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-    userId: string;
-    user: User;
-    uploads: UserUpload[];
-    collections: Collection[];
-}
-
-export class PackageEdge implements Edge {
-    __typename?: 'PackageEdge';
-    cursor: string;
-    node: Package;
-}
-
-export class PackageConnection implements Connection {
-    __typename?: 'PackageConnection';
-    edges: PackageEdge[];
-    pageInfo: PageInfo;
-    totalCount: number;
-}
-
-export abstract class IQuery {
-    __typename?: 'IQuery';
-    package?: Nullable<Package>;
-    packages?: PackageConnection;
-    myPackages?: PackageConnection;
-    health: string;
-    userUpload?: Nullable<UserUpload>;
-    userUploads?: UserUploadConnection;
-    myUploads?: UserUploadConnection;
-    approvedUploads?: UserUploadConnection;
-    pendingUploads?: UserUploadConnection;
-    generateUploadUrl?: UploadUrlResponse;
-    getDownloadUrl?: string;
-    asset?: Nullable<Asset>;
-    assetByUrn?: Nullable<Asset>;
-    assets?: AssetConnection;
-    assetsByTags?: Asset[];
-    assetsByUser?: Asset[];
-    tags: Tag[];
-    tag?: Nullable<Tag>;
-    collection?: Nullable<Collection>;
-    collections?: CollectionConnection;
-    myCollections?: CollectionConnection;
-    comments?: Comment[];
-    comment?: Nullable<Comment>;
-    commentsByAsset?: Comment[];
-    commentCount?: number;
-    commentsPaginated?: CommentConnection;
-    commentsByModerationStatus?: Comment[];
-    commentsPendingModeration?: Comment[];
-    commentsRejected?: Comment[];
-    liveStreams: LiveStream[];
-    liveStream?: Nullable<LiveStream>;
-    liveStreamByUrn?: Nullable<LiveStream>;
-    liveStreamByMuxId?: Nullable<LiveStream>;
-    liveStreamsByUser?: LiveStream[];
-    activeLiveStreams: LiveStream[];
-    scheduledLiveStreams: LiveStream[];
-    liveStreamUrls?: Nullable<LiveStreamUrls>;
-    operation?: Nullable<Nullable<Operation>[]>;
-    getServerTime?: Nullable<Operation>;
-    post?: Nullable<Post>;
-    postByUrn?: Nullable<Post>;
-    posts?: PostConnection;
-    postsByTags?: Post[];
-    postsByUser?: Post[];
-    postReplies?: Post[];
-    tenant?: Nullable<Tenant>;
-    tenantByTenanturn?: Nullable<Tenant>;
-    tenantByDomain?: Nullable<Tenant>;
-    tenants?: TenantConnection;
-    transcribe?: Transcribe;
-    transcribeStatistics?: TranscribeStatistics;
-    user?: Nullable<User>;
-    userByEmail?: Nullable<User>;
-    userByUserurn?: Nullable<User>;
-    users?: UserConnection;
-}
-
-export abstract class IMutation {
-    __typename?: 'IMutation';
-    createPackage?: Package;
-    updatePackage?: Package;
-    deletePackage?: boolean;
-    createUserUpload?: UserUpload;
-    updateUserUpload?: UserUpload;
-    deleteUserUpload?: boolean;
-    updateUploadStatus?: UserUpload;
-    updateAiAnalysis?: UserUpload;
-    approveUpload?: UserUpload;
-    rejectUpload?: UserUpload;
-    bulkUpdateUploadStatus?: UserUpload[];
-    createAsset?: Asset;
-    updateAsset?: Asset;
-    removeAsset?: boolean;
-    createCollection?: Collection;
-    updateCollection?: Collection;
-    deleteCollection?: boolean;
-    addPackageToCollection?: Collection;
-    removePackageFromCollection?: Collection;
-    createComment?: Comment;
-    updateComment?: Comment;
-    removeComment?: boolean;
-    triggerCommentModeration?: boolean;
-    updateCommentModerationStatus?: Comment;
-    createLiveStream?: LiveStream;
-    updateLiveStream?: LiveStream;
-    updateLiveStreamStatus?: LiveStream;
-    updateLiveStreamViewerStats?: LiveStream;
-    deleteLiveStream?: boolean;
-    createOperationRequest?: Nullable<Operation>;
-    createPost?: Post;
-    updatePost?: Post;
-    deletePost?: boolean;
-    votePost?: Post;
-    publishPost?: Post;
-    createTenant?: Tenant;
-    updateTenant?: Tenant;
-    removeTenant?: boolean;
-    createTranscribe?: Transcribe;
-    updateTranscribe?: Transcribe;
-    removeTranscribe?: boolean;
-    retryTranscribe?: boolean;
-    createUser?: User;
-    updateUser?: User;
-    removeUser?: boolean;
-    verifyUser?: User;
-    unverifyUser?: User;
-}
-
 export class PageInfo {
     __typename?: 'PageInfo';
     hasNextPage: boolean;
@@ -655,237 +302,25 @@ export class AuthPayload {
     accessToken: string;
 }
 
-export class UploadUrlResponse {
-    __typename?: 'UploadUrlResponse';
-    uploadUrl: string;
-    downloadUrl: string;
-    s3Key: string;
-}
-
-export abstract class ISubscription {
-    __typename?: 'ISubscription';
-    uploadStatusChanged?: UserUpload;
-    packageStatusChanged?: Package;
-    newUploadInCollection?: UserUpload;
-    curationCompleted?: UserUpload;
-}
-
-export class UserUpload {
-    __typename?: 'UserUpload';
-    id: number;
-    uploadurn: string;
-    filename: string;
-    originalFileName: string;
-    mimeType: string;
-    fileSize: number;
-    storageKey: string;
-    bucket: string;
-    assetType: AssetType;
-    status: UploadStatus;
-    tags: string[];
-    metadata?: Nullable<JSON>;
-    aiAnalysis?: Nullable<JSON>;
-    description?: Nullable<string>;
-    isActive: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-    userurn: string;
-    packageId?: Nullable<string>;
-    user: User;
-    package?: Nullable<Package>;
-    downloadUrl?: Nullable<string>;
-}
-
-export class UserUploadEdge implements Edge {
-    __typename?: 'UserUploadEdge';
-    cursor: string;
-    node: UserUpload;
-}
-
-export class UserUploadConnection implements Connection {
-    __typename?: 'UserUploadConnection';
-    edges: UserUploadEdge[];
-    pageInfo: PageInfo;
-    totalCount: number;
-}
-
-export class Tag {
-    __typename?: 'Tag';
-    id: number;
-    tagurn: string;
-    name: string;
-    description?: Nullable<string>;
-    color?: Nullable<string>;
-    usageCount: number;
-    isActive: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-export class Asset {
-    __typename?: 'Asset';
-    id: number;
-    asseturn: string;
-    title?: Nullable<string>;
-    description?: Nullable<string>;
-    assetType: AssetType;
-    originalFileName: string;
-    fileSize?: Nullable<number>;
-    mimeType?: Nullable<string>;
-    storageKey?: Nullable<string>;
-    bucket?: Nullable<string>;
-    region?: Nullable<string>;
-    moderationStatus: ContentModerationStatus;
-    moderationResults?: Nullable<JSON>;
-    moderationFailureReason?: Nullable<string>;
-    metadata?: Nullable<JSON>;
-    isPublic: boolean;
-    cdnRootUrl?: Nullable<string>;
-    cdnUrl?: Nullable<string>;
-    isUploaded: boolean;
-    uploadedAt?: Nullable<Date>;
-    isActive: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-    user: User;
-    userurn?: Nullable<string>;
-    tags: Tag[];
-    fileUrl: string;
-    thumbnailUrl?: Nullable<string>;
-    isModerated: boolean;
-    isApproved: boolean;
-}
-
-export class AssetEdge implements Edge {
-    __typename?: 'AssetEdge';
-    cursor: string;
-    node: Asset;
-}
-
-export class AssetConnection implements Connection {
-    __typename?: 'AssetConnection';
-    edges: AssetEdge[];
-    pageInfo: PageInfo;
-    totalCount: number;
-}
-
-export class TagEdge implements Edge {
-    __typename?: 'TagEdge';
-    cursor: string;
-    node: Tag;
-}
-
-export class TagConnection implements Connection {
-    __typename?: 'TagConnection';
-    edges: TagEdge[];
-    pageInfo: PageInfo;
-    totalCount: number;
-}
-
-export class Collection {
-    __typename?: 'Collection';
-    id: number;
-    collectionurn: string;
-    name: string;
-    description?: Nullable<string>;
-    isPublic: boolean;
-    isActive: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-    userId: string;
-    user: User;
-    packages: Package[];
-}
-
-export class CollectionEdge implements Edge {
-    __typename?: 'CollectionEdge';
-    cursor: string;
-    node: Collection;
-}
-
-export class CollectionConnection implements Connection {
-    __typename?: 'CollectionConnection';
-    edges: CollectionEdge[];
-    pageInfo: PageInfo;
-    totalCount: number;
-}
-
-export class Comment {
-    __typename?: 'Comment';
-    id: number;
-    commenturn: string;
-    tenanturn?: Nullable<string>;
-    content: string;
-    status: CommentStatus;
-    isEdited: boolean;
-    editedAt?: Nullable<Date>;
-    asseturn: string;
-    userurn: string;
-    user: User;
-    asset: Asset;
-    moderationStatus: ContentModerationStatus;
-    moderationResults?: Nullable<JSON>;
-    moderationFailureReason?: Nullable<string>;
-    moderatedAt?: Nullable<Date>;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-export class CommentEdge {
-    __typename?: 'CommentEdge';
-    cursor: string;
-    node: Comment;
-}
-
-export class CommentConnection {
-    __typename?: 'CommentConnection';
-    edges: CommentEdge[];
-    pageInfo: PageInfo;
-}
-
-export class LiveStream {
-    __typename?: 'LiveStream';
-    id: number;
-    livestreamurn: string;
-    name: string;
-    description?: Nullable<string>;
-    location?: Nullable<string>;
-    scheduledTime?: Nullable<Date>;
-    status: LiveStreamStatus;
-    muxLiveStreamId?: Nullable<string>;
-    streamKey?: Nullable<string>;
-    srtPassphrase?: Nullable<string>;
-    playbackId?: Nullable<string>;
-    latencyMode: LiveStreamLatencyMode;
-    audioOnly: boolean;
-    isRecordingEnabled: boolean;
-    isPublic: boolean;
-    rtmpIngestUrl: string;
-    rtmpsIngestUrl: string;
-    srtIngestUrl: string;
-    srt?: Nullable<string>;
-    srtStreamId?: Nullable<string>;
-    metadata?: Nullable<JSON>;
-    lastConnectedAt?: Nullable<Date>;
-    lastDisconnectedAt?: Nullable<Date>;
-    recordingStartedAt?: Nullable<Date>;
-    recordingEndedAt?: Nullable<Date>;
-    totalViewers: number;
-    maxConcurrentViewers: number;
-    durationMinutes: number;
-    userId: number;
-    user: User;
-    isActive: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-export class LiveStreamUrls {
-    __typename?: 'LiveStreamUrls';
-    rtmp?: Nullable<string>;
-    rtmps?: Nullable<string>;
-    srt?: Nullable<string>;
-    playback?: Nullable<string>;
+export abstract class IQuery {
+    __typename?: 'IQuery';
+    health: string;
+    operation?: Nullable<Nullable<Operation>[]>;
+    getServerTime?: Nullable<Operation>;
+    post?: Nullable<Post>;
+    postByUrn?: Nullable<Post>;
+    posts?: PostConnection;
+    postsByTags?: Post[];
+    postsByUser?: Post[];
+    postReplies?: Post[];
+    tenant?: Nullable<Tenant>;
+    tenantByTenanturn?: Nullable<Tenant>;
+    tenantByDomain?: Nullable<Tenant>;
+    tenants?: TenantConnection;
+    user?: Nullable<User>;
+    userByEmail?: Nullable<User>;
+    userByUserurn?: Nullable<User>;
+    users?: UserConnection;
 }
 
 export class Operation {
@@ -894,6 +329,24 @@ export class Operation {
     name?: Nullable<string>;
     type?: Nullable<string>;
     message?: Nullable<JSON>;
+}
+
+export abstract class IMutation {
+    __typename?: 'IMutation';
+    createOperationRequest?: Nullable<Operation>;
+    createPost?: Post;
+    updatePost?: Post;
+    deletePost?: boolean;
+    votePost?: Post;
+    publishPost?: Post;
+    createTenant?: Tenant;
+    updateTenant?: Tenant;
+    removeTenant?: boolean;
+    createUser?: User;
+    updateUser?: User;
+    removeUser?: boolean;
+    verifyUser?: User;
+    unverifyUser?: User;
 }
 
 export class Post {
@@ -926,8 +379,6 @@ export class Post {
     user: User;
     parentPostUrn?: Nullable<string>;
     parentPost?: Nullable<Post>;
-    assets: Asset[];
-    tags: Tag[];
     replies: Post[];
     score: number;
     hotScore: number;
@@ -978,42 +429,6 @@ export class TenantConnection implements Connection {
     edges: TenantEdge[];
     pageInfo: PageInfo;
     totalCount: number;
-}
-
-export class Transcribe {
-    __typename?: 'Transcribe';
-    id: number;
-    transcribeurn: string;
-    textBlocks: string[];
-    status: TranscribeStatus;
-    language: TranscribeLanguage;
-    voiceId: PollyVoiceId;
-    storageKey?: Nullable<string>;
-    bucket?: Nullable<string>;
-    cdnRootUrl?: Nullable<string>;
-    duration?: Nullable<number>;
-    pollyMetadata?: Nullable<JSON>;
-    errorMessage?: Nullable<string>;
-    userurn?: Nullable<string>;
-    user?: Nullable<User>;
-    tenanturn?: Nullable<string>;
-    isActive?: Nullable<boolean>;
-    createdAt: DateTime;
-    updatedAt: DateTime;
-}
-
-export class TranscribeStatistics {
-    __typename?: 'TranscribeStatistics';
-    total: number;
-    byStatus: TranscribeStatusStats;
-}
-
-export class TranscribeStatusStats {
-    __typename?: 'TranscribeStatusStats';
-    pending: number;
-    processing: number;
-    completed: number;
-    failed: number;
 }
 
 export class User {
