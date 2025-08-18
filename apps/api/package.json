@@ -85,7 +85,7 @@
     "@opentelemetry/semantic-conventions": "^1.36.0",
     "@supabase/supabase-js": "^2.55.0",
     "cache-manager": "^7.1.1",
-    "cacheable": "^1.10.3",
+    "cacheable": "^1.10.4",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "exifr": "^7.1.3",

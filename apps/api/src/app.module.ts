@@ -138,8 +138,8 @@ const OpenTelemetryModuleConfig = OpenTelemetryModule.forRootAsync({
     UtilitiesModule,
 
     OperationModule,
+    UserModule,
     // TenantModule,
-    // UserModule,
     // PostModule,
   ],
   controllers: [],
