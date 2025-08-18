@@ -7,7 +7,6 @@ import { trace } from '@opentelemetry/api';
 @Injectable()
 export class GraphQLYogaDriverConfigService implements GqlOptionsFactory {
   async createGqlOptions(): Promise<GqlModuleOptions> {
-    console.log('-------------');
     return {
       driver: YogaDriver,
       autoSchemaFile: 'schema.gql',

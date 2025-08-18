@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TerminusModule } from '@nestjs/terminus';
 import { HealthController } from './health/health.controller';
 import { SimpleHealthController } from './health/simple-health.controller';
-import { MediaTypeValidationService } from './media/services';
+
 
 declare global {
   interface String {
@@ -17,8 +17,8 @@ String.prototype.interpolate = function (params) {
 
 @Module({
   imports: [TerminusModule],
-  providers: [MediaTypeValidationService],
+  providers: [],
   controllers: [HealthController, SimpleHealthController],
-  exports: [MediaTypeValidationService],
+  exports: [],
 })
-export class CommonModule {}
+export class CommonModule { }

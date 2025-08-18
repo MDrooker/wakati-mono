@@ -39,10 +39,3 @@ type AuthPayload {
   user: User!
   accessToken: String!
 }
-
-# Upload URL response
-type UploadUrlResponse {
-  uploadUrl: String!
-  downloadUrl: String!
-  s3Key: String!
-}
