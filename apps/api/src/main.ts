@@ -15,12 +15,13 @@ import {
 import otelSDK from './tracing';
 import multipart from '@fastify/multipart';
 import { writeFileSync } from 'fs';
-import { ClusterModule } from './common/cluster.module';
+
 import { Logger, ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
 import { ServiceLocator } from './common/service-locator/service-locator';
 import inngestFastify, { fastifyPlugin, serve } from 'inngest/fastify';
 import { InngestService } from './common/inngest/inngest.service';
 import { GlobalInngestFunctionsRegistry } from './common/inngest/inngest.functions.registry';
+import { ClusterModule } from './common/cluster/cluster.module';
 
 const API_DEFAULT_PREFIX = '/api/v1/';
 const logger = new Logger('Bootstrap');
@@ -64,18 +65,9 @@ function setupSwaggerDocumentation(
       },
       'JWT-auth',
     )
-    .addTag('Assets', 'Asset upload, management, and content moderation')
     .addTag('Users', 'User management and authentication')
-    .addTag('Collections', 'Collection management for organizing assets')
     .addTag('Posts', 'Content creation and rich text management')
-    .addTag('Comments', 'Commenting system for assets and posts')
-    .addTag('Tenants', 'Multi-tenancy support for isolated environments')
-    .addTag('Transcribe', 'Transcription management for text-to-speech')
-    .addTag('Live Streams', 'Live streaming management with Mux')
-    .addTag('HLSTranscoding', 'Media conversion, transcoding, and processing')
-    .addTag('Health', 'Health checks and system status')
-    .addTag('Curation', 'AI-driven content curation and moderation')
-    .addTag('Conversion', 'AI-driven content conversion and processing')
+
     .build();
   const options: SwaggerCustomOptions = {
     ui: true, // Swagger UI is disabled

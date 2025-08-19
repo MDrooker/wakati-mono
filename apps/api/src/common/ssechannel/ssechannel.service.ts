@@ -37,7 +37,7 @@ export class SseChannelService {
     }> = new Map();
     private defaultHistoryLimit = 100;
     private heartbeatIntervalMs = 15000;
-    private rateLimitMs = 1000;
+    private rateLimitMs = 50;
     private lastBroadcast: Map<string, number> = new Map();
     private shuttingDown = false;
 
@@ -114,13 +114,13 @@ export class SseChannelService {
     }
 
     // Broadcast a message to all clients in a channel
-    broadcast(data: any, event?: string, id?: string, channel = 'default') {
+    broadcast({ data, event, id, channel = 'default' }: { data: any, event?: string, id?: string, channel?: string }) {
         const now = Date.now();
-        if (this.lastBroadcast.has(channel) && now - this.lastBroadcast.get(channel)! < this.rateLimitMs) {
-            // Rate limit
-            if (tracer) tracer.startSpan('sse.rate-limit').end();
-            return;
-        }
+        // if (this.lastBroadcast.has(channel) && now - this.lastBroadcast.get(channel)! < this.rateLimitMs) {
+        //     // Rate limit
+        //     if (tracer) tracer.startSpan('sse.rate-limit').end();
+        //     return;
+        // }
         this.lastBroadcast.set(channel, now);
         if (!this.channels.has(channel)) {
             this.channels.set(channel, {

@@ -30,7 +30,6 @@ import { DiscoveryModule } from '@nestjs/core';
 import { InngestModule } from './common/inngest/inngest.module';
 import { PostModule } from './modules/post/post.module';
 import { TenantModule } from './modules/tenant/tenant.module';
-import { PostController } from './modules/post/post.sse.controller';
 import { SSEChannelModule } from './common/ssechannel/ssechannel.module';
 
 const logger = new Logger('ApplicationModule');
@@ -141,7 +140,7 @@ const OpenTelemetryModuleConfig = OpenTelemetryModule.forRootAsync({
     // OperationModule,
     UserModule,
     // TenantModule,
-    // PostModule,
+    PostModule,
   ],
   controllers: [],
   exports: [],

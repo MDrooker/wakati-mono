@@ -23,8 +23,7 @@ import {
   PostStatus,
   ContentModerationStatus,
 } from './entities/post.entity';
-import { Tag } from '../asset/entities/tag.entity';
-import { Asset } from '../asset/entities/asset.entity';
+
 import { InngestService } from 'src/common/inngest/inngest.service';
 import { TenantContextService } from '../tenant/services/tenant-context.service';
 
@@ -35,12 +34,6 @@ export class PostService {
   constructor(
     @InjectRepository(Post)
     private postRepository: Repository<Post>,
-
-    @InjectRepository(Tag)
-    private tagRepository: Repository<Tag>,
-
-    @InjectRepository(Asset)
-    private assetRepository: Repository<Asset>,
 
     private readonly inngestService: InngestService,
     private readonly tenantContextService: TenantContextService,
@@ -71,64 +64,11 @@ export class PostService {
     return Post.generatePostUrn();
   }
 
-  /**
-   * Process tags from input - find existing or create new ones
-   */
-  private async processTags(tagNames?: string[]): Promise<Tag[]> {
-    if (!tagNames || tagNames.length === 0) {
-      return [];
-    }
-    return this.findOrCreateTags(tagNames);
-  }
-
-  /**
-   * Process assets from input URNs
-   */
-  private async processAssets(assetUrns?: string[]): Promise<Asset[]> {
-    if (!assetUrns || assetUrns.length === 0) {
-      return [];
-    }
-
-    const assets = await this.assetRepository.find({
-      where: { asseturn: In(assetUrns) },
-    });
-
-    if (assets.length !== assetUrns.length) {
-      const foundUrns = assets.map((asset) => asset.asseturn);
-      const notFoundUrns = assetUrns.filter((urn) => !foundUrns.includes(urn));
-      throw new NotFoundException(
-        `Assets not found: ${notFoundUrns.join(', ')}`,
-      );
-    }
-
-    return assets;
-  }
 
   /**
    * Find or create tags by name
    */
-  private async findOrCreateTags(tagNames: string[]): Promise<Tag[]> {
-    const tags: Tag[] = [];
 
-    for (const tagName of tagNames) {
-      const normalizedName = tagName.toLowerCase().trim();
-      let tag = await this.tagRepository.findOne({
-        where: { name: normalizedName },
-      });
-
-      if (!tag) {
-        tag = this.tagRepository.create({
-          name: normalizedName,
-          description: `Auto-generated tag for: ${normalizedName}`,
-        });
-        tag = await this.tagRepository.save(tag);
-      }
-
-      tags.push(tag);
-    }
-
-    return tags;
-  }
 
   /**
    * Create base post data with common properties
@@ -136,8 +76,6 @@ export class PostService {
   private createBasePostData(
     input: CreatePostDto,
     userurn: string,
-    tags: Tag[],
-    assets: Asset[],
     tenanturn?: string,
     overrides?: Partial<Post>,
   ): Partial<Post> {
@@ -147,8 +85,6 @@ export class PostService {
     return {
       ...input,
       userurn,
-      tags,
-      assets,
       tenanturn: resolvedTenanturn,
       moderationStatus: ContentModerationStatus.PENDING,
       ...overrides,
@@ -164,8 +100,7 @@ export class PostService {
     userurn: string;
     tenanturn?: string;
   }): Promise<Post> {
-    const tags = await this.processTags(input.tags);
-    const assets = await this.processAssets(input.assetUrns);
+
     // Validate post type and required fields
     if (input.postType === PostType.LINK && !input.url) {
       throw new BadRequestException('URL is required for link posts');
@@ -185,8 +120,6 @@ export class PostService {
     const basePostData = this.createBasePostData(
       input,
       userurn,
-      tags,
-      assets,
       tenanturn,
     );
     const post = this.postRepository.create(basePostData);
@@ -417,19 +350,10 @@ export class PostService {
       );
     }
 
-    // Process updated tags and assets if provided
-    const tags = updatePostDto.tags
-      ? await this.processTags(updatePostDto.tags)
-      : post.tags;
-    const assets = updatePostDto.assetUrns
-      ? await this.processAssets(updatePostDto.assetUrns)
-      : post.assets;
 
     // Update post data
     Object.assign(post, {
       ...updatePostDto,
-      tags,
-      assets,
       // Reset moderation if content changed
       ...(updatePostDto.body && updatePostDto.body !== post.body
         ? {
@@ -609,35 +533,7 @@ export class PostService {
     return this.findPostOrThrow(whereCondition, ['tags', 'assets']);
   }
 
-  // Tag management methods (inherited from AssetService pattern)
-  async findAllTags(): Promise<Tag[]> {
-    return this.tagRepository.find({
-      where: { isActive: true },
-      order: { usageCount: 'DESC' },
-    });
-  }
 
-  async findTagByName(name: string): Promise<Tag | null> {
-    return this.tagRepository.findOne({
-      where: { name: name.toLowerCase().trim() },
-    });
-  }
-
-  async updateTagUsageCount(tagId: string): Promise<void> {
-    const tag = await this.tagRepository.findOne({
-      where: { id: parseInt(tagId) },
-    });
-    if (tag) {
-      const count = await this.postRepository
-        .createQueryBuilder('post')
-        .leftJoin('post.tags', 'tag')
-        .where('tag.id = :tagId', { tagId })
-        .andWhere('post.isActive = :isActive', { isActive: true })
-        .getCount();
-
-      await this.tagRepository.update(tagId, { usageCount: count });
-    }
-  }
 
   // Pagination support
   async findPostsWithPagination(

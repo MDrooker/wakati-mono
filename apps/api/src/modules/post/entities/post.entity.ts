@@ -13,8 +13,7 @@ import {
 } from 'typeorm';
 import { customAlphabet } from 'nanoid';
 import { BaseEntity } from 'src/common/database/entities/base.entity';
-import { Asset } from '../../asset/entities/asset.entity';
-import { Tag } from '../../asset/entities/tag.entity';
+
 
 const nanoid = customAlphabet('1234567890abcdef', 5);
 
@@ -157,23 +156,6 @@ export class Post extends BaseEntity {
   @JoinColumn({ name: 'tenanturn', referencedColumnName: 'tenanturn' })
   tenant: any;
 
-  // Many-to-many relationship with assets
-  @ManyToMany(() => Asset, (asset) => asset.posts, { cascade: true })
-  @JoinTable({
-    name: 'post_assets',
-    joinColumn: { name: 'posturn', referencedColumnName: 'posturn' },
-    inverseJoinColumn: { name: 'asseturn', referencedColumnName: 'asseturn' },
-  })
-  assets: Asset[];
-
-  // Many-to-many relationship with tags
-  @ManyToMany(() => Tag, (tag) => tag.posts, { cascade: true })
-  @JoinTable({
-    name: 'post_tags',
-    joinColumn: { name: 'posturn', referencedColumnName: 'posturn' },
-    inverseJoinColumn: { name: 'tagurn', referencedColumnName: 'tagurn' },
-  })
-  tags: Tag[];
 
   // Self-referencing for replies/comments (if implementing comments as posts)
   @ManyToOne(() => Post, (post) => post.replies, {

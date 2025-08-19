@@ -13,7 +13,7 @@ import {
   DetectLabelsCommandOutput,
   Label,
 } from '@aws-sdk/client-rekognition';
-import { MediaTypeValidationService } from '../media/services';
+
 import * as path from 'path';
 
 export interface VideoModerationResult {
@@ -57,7 +57,7 @@ export class RekognitionService {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly mediaTypeValidationService: MediaTypeValidationService,
+    // private readonly mediaTypeValidationService: MediaTypeValidationService,
   ) {
     this.region = this.configService.get<string>('AWS_REGION', 'us-east-1');
 
@@ -69,23 +69,23 @@ export class RekognitionService {
   /**
    * Validate video format and codec compatibility with Rekognition
    */
-  validateVideoFormat(objectKey: string): VideoValidationResult {
-    const fileExtension = path
-      .extname(objectKey)
-      .toLowerCase()
-      .replace('.', '');
+  // validateVideoFormat(objectKey: string): VideoValidationResult {
+  //   const fileExtension = path
+  //     .extname(objectKey)
+  //     .toLowerCase()
+  //     .replace('.', '');
 
-    return this.mediaTypeValidationService.validateVideoFormatForRekognition(
-      fileExtension,
-    );
-  }
+  //   return this.mediaTypeValidationService.validateVideoFormatForRekognition(
+  //     fileExtension,
+  //   );
+  // }
 
   /**
    * Get detailed format requirements for video files
    */
-  getVideoFormatRequirements(): string[] {
-    return this.mediaTypeValidationService.getRekognitionVideoFormatRequirements();
-  }
+  // getVideoFormatRequirements(): string[] {
+  //   return this.mediaTypeValidationService.getRekognitionVideoFormatRequirements();
+  // }
 
   /**
    * Start content moderation job for a video stored in S3 (original method)
@@ -127,7 +127,7 @@ export class RekognitionService {
           `Started video content moderation job: ${response.JobId} for ${bucketName}/${objectKey}`,
         );
         return response.JobId;
-      } catch (error) {}
+      } catch (error) { }
     } catch (error) {
       this.logger.error('Failed to start video content moderation', error);
 
