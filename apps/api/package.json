@@ -118,7 +118,7 @@
     "rxjs": "^7.8.2",
     "sharp": "^0.34.3",
     "tsx": "^4.20.4",
-    "typeorm": "^0.3.25",
+    "typeorm": "^0.3.26",
     "typeorm-transactional": "^0.5.0",
     "zod": "^4.0.17"
   },
@@ -156,7 +156,7 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.39.1",
+    "typescript-eslint": "^8.40.0",
     "vitest": "^3.2.4"
   },
   "jest": {

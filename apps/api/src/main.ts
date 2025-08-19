@@ -112,9 +112,7 @@ async function bootstrap() {
     logger.log('✅ OTEL SDK initialization skipped (commented out)');
 
     // initializeTransactionalContext();
-    logger.log(
-      '✅ Transactional context initialization skipped (commented out)',
-    );
+    logger.log('✅ Transactional context initialization skipped (commented out)');
 
     logger.log('📦 Creating NestJS application with Fastify adapter...');
     const app = await NestFactory.create<NestFastifyApplication>(
@@ -135,15 +133,13 @@ async function bootstrap() {
             : ['error', 'warn', 'log'],
       },
     );
+
     const config = app.get(ConfigService);
     const port = config.get<string>('PORT') || '8080';
     const system = config.get<string>('SYSTEM') || 'wakati';
     const product = config.get<string>('PRODUCT') || 'api';
     logger.log('✅ NestJS application created successfully');
 
-    // Capture raw body for webhook signature verification. This attaches a
-    // `rawBody` Buffer to the incoming request object. Mux requires the exact
-    // raw payload when verifying signatures.
     const fastifyInstance = app.getHttpAdapter().getInstance();
 
 

@@ -30,6 +30,8 @@ import { DiscoveryModule } from '@nestjs/core';
 import { InngestModule } from './common/inngest/inngest.module';
 import { PostModule } from './modules/post/post.module';
 import { TenantModule } from './modules/tenant/tenant.module';
+import { PostController } from './modules/post/post.sse.controller';
+import { SSEChannelModule } from './common/ssechannel/ssechannel.module';
 
 const logger = new Logger('ApplicationModule');
 
@@ -94,11 +96,12 @@ const OpenTelemetryModuleConfig = OpenTelemetryModule.forRootAsync({
         },
       },
     }),
+    TypeORMDatabaseModule,
     DiscoveryModule,
     Cache,
-    SupabaseModule,
-    AuthModule,
-    TypeORMDatabaseModule,
+    // SupabaseModule,
+    // AuthModule,
+    // SSEChannelModule,
     // GraphQLModule.forRootAsync<YogaDriverConfig>({
     //   driver: YogaDriver,
     //   useFactory: () => {
@@ -129,15 +132,13 @@ const OpenTelemetryModuleConfig = OpenTelemetryModule.forRootAsync({
     //     };
     //   },
     // }),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'client'),
-      renderPath: '/client',
-    }),
-    CommonModule,
-
-    UtilitiesModule,
-
-    OperationModule,
+    // ServeStaticModule.forRoot({
+    //   rootPath: join(__dirname, '..', 'client'),
+    //   renderPath: '/client',
+    // }),
+    // CommonModule,
+    // UtilitiesModule,
+    // OperationModule,
     UserModule,
     // TenantModule,
     // PostModule,

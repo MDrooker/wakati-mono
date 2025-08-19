@@ -4,8 +4,7 @@ import { PostService } from './post.service';
 import { PostController } from './post.controller';
 import { PostResolver } from './post.resolver';
 import { Post } from './entities/post.entity';
-import { Asset } from '../asset/entities/asset.entity';
-import { Tag } from '../asset/entities/tag.entity';
+
 import { InngestModule } from '../../common/inngest/inngest.module';
 import { AwsModule } from '../../common/aws/aws.module';
 import { PostEventsService } from './events/post.event';
@@ -14,7 +13,7 @@ import { TenantInterceptor } from '../tenant/intercepters/tenant.interceptor';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Post, Asset, Tag]),
+    TypeOrmModule.forFeature([Post]),
     InngestModule,
     AwsModule,
   ],
@@ -28,4 +27,4 @@ import { TenantInterceptor } from '../tenant/intercepters/tenant.interceptor';
   ],
   exports: [PostService],
 })
-export class PostModule {}
+export class PostModule { }
