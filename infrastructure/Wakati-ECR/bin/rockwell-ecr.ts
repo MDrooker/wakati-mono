@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
-import { RockwellEcrStack } from '../lib/rockwell-ecr-stack';
+import { RockwellEcrStack } from '../lib/wakati-ecr-stack';
 import * as dotenv from 'dotenv';
 
 // Load environment variables

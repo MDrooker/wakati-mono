@@ -12,16 +12,16 @@ import * as mediaconvert from 'aws-cdk-lib/aws-mediaconvert';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 
-export interface RockwellFargateStackProps extends cdk.StackProps {
+export interface WakatiFargateStackProps extends cdk.StackProps {
     ecrStackName: string;
 }
 
-export class RockwellFargateStack extends cdk.Stack {
+export class WakatiFargateStack extends cdk.Stack {
     public readonly cluster: ecs.Cluster;
     public readonly service: ecs.FargateService;
     public readonly loadBalancer: elasticloadbalancingv2.ApplicationLoadBalancer;
 
-    constructor(scope: Construct, id: string, props: RockwellFargateStackProps) {
+    constructor(scope: Construct, id: string, props: WakatiFargateStackProps) {
         super(scope, id, props);
 
         // Get environment from stack name or default to 'dev'
@@ -72,8 +72,8 @@ export class RockwellFargateStack extends cdk.Stack {
         });
 
         // Create VPC with public and private subnets
-        const vpc = new ec2.Vpc(this, 'RockwellVpc', {
-            vpcName: `rockwell-vpc-${environment}`,
+        const vpc = new ec2.Vpc(this, 'WakatiVpc', {
+            vpcName: `wakati-vpc-${environment}`,
             maxAzs: 2,
             natGateways: 1, // Cost optimization - use 1 NAT gateway
             subnetConfiguration: [
@@ -91,36 +91,36 @@ export class RockwellFargateStack extends cdk.Stack {
         });
 
         // Create ECS Cluster
-        this.cluster = new ecs.Cluster(this, 'RockwellCluster', {
-            clusterName: `rockwell-cluster-${environment}`,
+        this.cluster = new ecs.Cluster(this, 'WakatiCluster', {
+            clusterName: `wakati-cluster-${environment}`,
             vpc,
             containerInsights: true,
         });
 
         // Create service discovery namespace
-        const namespace = new servicediscovery.PrivateDnsNamespace(this, 'RockwellNamespace', {
-            name: `rockwell.${environment}.local`,
+        const namespace = new servicediscovery.PrivateDnsNamespace(this, 'WakatiNamespace', {
+            name: `wakati.${environment}.local`,
             vpc,
-            description: 'Service discovery namespace for Rockwell services',
+            description: 'Service discovery namespace for Wakati services',
         });
 
         // Create CloudWatch Log Group
-        const logGroup = new logs.LogGroup(this, 'RockwellLogGroup', {
-            logGroupName: `/ecs/rockwell-api-${environment}`,
+        const logGroup = new logs.LogGroup(this, 'WakatiLogGroup', {
+            logGroupName: `/ecs/wakati-api-${environment}`,
             retention: logs.RetentionDays.ONE_WEEK,
             removalPolicy: cdk.RemovalPolicy.DESTROY,
         });
 
         // Create IAM roles for ECS tasks
-        const taskRole = new iam.Role(this, 'RockwellTaskRole', {
+        const taskRole = new iam.Role(this, 'WakatiTaskRole', {
             assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
-            roleName: `rockwell-task-role-${environment}`,
-            description: 'IAM role for Rockwell ECS tasks',
+            roleName: `wakati-task-role-${environment}`,
+            description: 'IAM role for Wakati ECS tasks',
         });
 
-        const executionRole = new iam.Role(this, 'RockwellExecutionRole', {
+        const executionRole = new iam.Role(this, 'WakatiExecutionRole', {
             assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
-            roleName: `rockwell-execution-role-${environment}`,
+            roleName: `wakati-execution-role-${environment}`,
             managedPolicies: [
                 iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonECSTaskExecutionRolePolicy'),
             ],
@@ -178,134 +178,13 @@ export class RockwellFargateStack extends cdk.Stack {
                     's3:ListBucket',
                 ],
                 resources: [
-                    'arn:aws:s3:::rockwell-*',
-                    'arn:aws:s3:::rockwell-*/*',
+                    'arn:aws:s3:::wakati-*',
+                    'arn:aws:s3:::wakati-*/*',
                 ],
             })
         );
 
-        // Add AWS Rekognition permissions for content moderation
-        taskRole.addToPolicy(
-            new iam.PolicyStatement({
-                effect: iam.Effect.ALLOW,
-                actions: [
-                    // Image analysis
-                    'rekognition:DetectLabels',
-                    'rekognition:DetectModerationLabels',
-                    'rekognition:DetectFaces',
-                    'rekognition:DetectText',
-                    // Video analysis
-                    'rekognition:StartLabelDetection',
-                    'rekognition:StartContentModeration',
-                    'rekognition:StartFaceDetection',
-                    'rekognition:StartTextDetection',
-                    'rekognition:GetLabelDetection',
-                    'rekognition:GetContentModeration',
-                    'rekognition:GetFaceDetection',
-                    'rekognition:GetTextDetection',
-                    // Custom models (if used)
-                    'rekognition:DetectCustomLabels',
-                    'rekognition:StartCustomModelDetection',
-                    'rekognition:GetCustomModelDetection',
-                ],
-                resources: ['*'], // Rekognition doesn't support resource-level permissions
-            })
-        );
-
-        // Add SNS permissions for Rekognition video analysis notifications
-        taskRole.addToPolicy(
-            new iam.PolicyStatement({
-                effect: iam.Effect.ALLOW,
-                actions: [
-                    'sns:Publish',
-                    'sns:CreateTopic',
-                    'sns:GetTopicAttributes',
-                    'sns:SetTopicAttributes',
-                    'sns:Subscribe',
-                    'sns:Unsubscribe',
-                ],
-                resources: [
-                    `arn:aws:sns:${this.region}:${this.account}:rockwell-*`,
-                ],
-            })
-        );
-
-        // Add SQS permissions for processing Rekognition notifications
-        taskRole.addToPolicy(
-            new iam.PolicyStatement({
-                effect: iam.Effect.ALLOW,
-                actions: [
-                    'sqs:ReceiveMessage',
-                    'sqs:DeleteMessage',
-                    'sqs:SendMessage',
-                    'sqs:GetQueueAttributes',
-                    'sqs:ChangeMessageVisibility',
-                ],
-                resources: [
-                    `arn:aws:sqs:${this.region}:${this.account}:rockwell-*`,
-                ],
-            })
-        );
-
-        taskRole.addToPolicy(
-            new iam.PolicyStatement({
-                effect: iam.Effect.ALLOW,
-                actions: [
-                    'polly:SynthesizeSpeech',
-                ],
-                resources: ['*'],
-            })
-        );
-
-        // Add AWS Comprehend permissions for text analysis and moderation
-        taskRole.addToPolicy(
-            new iam.PolicyStatement({
-                effect: iam.Effect.ALLOW,
-                actions: [
-                    // Text analysis
-                    'comprehend:DetectSentiment',
-                    'comprehend:DetectEntities',
-                    'comprehend:DetectKeyPhrases',
-                    'comprehend:DetectLanguage',
-                    'comprehend:DetectSyntax',
-                    // Content moderation
-                    'comprehend:DetectToxicContent',
-                    'comprehend:DetectPiiEntities',
-                    // Classification and custom models
-                    'comprehend:ClassifyDocument',
-                    'comprehend:StartDocumentClassificationJob',
-                    'comprehend:DescribeDocumentClassificationJob',
-                ],
-                resources: ['*'], // Comprehend doesn't support resource-level permissions
-            })
-        );
-
-        // Add AWS MediaConvert permissions for video transcoding
-        taskRole.addToPolicy(
-            new iam.PolicyStatement({
-                effect: iam.Effect.ALLOW,
-                actions: [
-                    // Job management
-                    'mediaconvert:CreateJob',
-                    'mediaconvert:GetJob',
-                    'mediaconvert:ListJobs',
-                    'mediaconvert:CancelJob',
-                    // Queue management
-                    'mediaconvert:DescribeQueues',
-                    'mediaconvert:ListQueues',
-                    // Preset and template management
-                    'mediaconvert:DescribePresets',
-                    'mediaconvert:ListPresets',
-                    'mediaconvert:DescribeJobTemplates',
-                    'mediaconvert:ListJobTemplates',
-                    // Endpoint discovery
-                    'mediaconvert:DescribeEndpoints',
-                ],
-                resources: [
-                    `arn:aws:mediaconvert:${this.region}:${this.account}:*`,
-                ],
-            })
-        );
+      
 
         // Add CloudFront permissions for CDN cache invalidation
         taskRole.addToPolicy(
@@ -322,115 +201,15 @@ export class RockwellFargateStack extends cdk.Stack {
             })
         );
 
-        // Create MediaConvert service role for video transcoding
-        const mediaConvertRole = new iam.Role(this, 'MediaConvertRole', {
-            assumedBy: new iam.ServicePrincipal('mediaconvert.amazonaws.com'),
-            roleName: `rockwell-mediaconvert-role-${environment}`,
-            description: 'IAM role for AWS MediaConvert to access S3 and other resources',
-        });
 
-        // Grant MediaConvert role access to S3 buckets
-        mediaConvertRole.addToPolicy(
-            new iam.PolicyStatement({
-                effect: iam.Effect.ALLOW,
-                actions: [
-                    's3:GetObject',
-                    's3:GetObjectVersion',
-                    's3:PutObject',
-                    's3:PutObjectAcl',
-                    's3:GetBucketLocation',
-                    's3:ListBucket',
-                ],
-                resources: [
-                    'arn:aws:s3:::rockwell-*',
-                    'arn:aws:s3:::rockwell-*/*',
-                ],
-            })
-        );
 
-        // Grant MediaConvert role CloudWatch Logs access
-        mediaConvertRole.addToPolicy(
-            new iam.PolicyStatement({
-                effect: iam.Effect.ALLOW,
-                actions: [
-                    'logs:CreateLogGroup',
-                    'logs:CreateLogStream',
-                    'logs:PutLogEvents',
-                    'logs:DescribeLogGroups',
-                    'logs:DescribeLogStreams',
-                ],
-                resources: [
-                    `arn:aws:logs:${this.region}:${this.account}:log-group:/aws/mediaconvert/*`,
-                ],
-            })
-        );
 
-        // Grant MediaConvert role API Gateway access (for progress callbacks if needed)
-        mediaConvertRole.addToPolicy(
-            new iam.PolicyStatement({
-                effect: iam.Effect.ALLOW,
-                actions: [
-                    'execute-api:Invoke',
-                ],
-                resources: [
-                    `arn:aws:execute-api:${this.region}:${this.account}:*/*/POST/webhooks/mediaconvert`,
-                ],
-            })
-        );
-
-        // Create MediaConvert queue for job processing
-        const mediaConvertQueue = new mediaconvert.CfnQueue(this, 'MediaConvertQueue', {
-            name: `rockwell-hls-queue-${environment}`,
-            description: 'MediaConvert queue for Rockwell HLS transcoding jobs',
-            status: 'ACTIVE',
-            pricingPlan: 'ON_DEMAND', // Can be changed to 'RESERVED' for consistent workloads
-            tags: {
-                Project: 'Rockwell',
-                Environment: environment,
-                Component: 'MediaConvert',
-                Purpose: 'HLS-Transcoding',
-                ManagedBy: 'CDK',
-            },
-        });
-
-        // Allow ECS task role to pass the MediaConvert role
-        taskRole.addToPolicy(
-            new iam.PolicyStatement({
-                effect: iam.Effect.ALLOW,
-                actions: [
-                    'iam:PassRole',
-                ],
-                resources: [
-                    mediaConvertRole.roleArn,
-                ],
-                conditions: {
-                    StringEquals: {
-                        'iam:PassedToService': 'mediaconvert.amazonaws.com',
-                    },
-                },
-            })
-        );
-
-        // Store MediaConvert role and queue ARNs in SSM Parameter Store
-        new ssm.StringParameter(this, 'MediaConvertRoleArnParameter', {
-            parameterName: `/rockwell/${environment}/aws-mediaconvert-role-arn`,
-            stringValue: mediaConvertRole.roleArn,
-            description: 'ARN of the IAM role for AWS MediaConvert service',
-            tier: ssm.ParameterTier.STANDARD,
-        });
-
-        new ssm.StringParameter(this, 'MediaConvertQueueArnParameter', {
-            parameterName: `/rockwell/${environment}/aws-mediaconvert-queue-arn`,
-            stringValue: mediaConvertQueue.attrArn,
-            description: 'ARN of the MediaConvert queue for HLS transcoding',
-            tier: ssm.ParameterTier.STANDARD,
-        });
 
         // Create security group for Application Load Balancer
         const loadBalancerSecurityGroup = new ec2.SecurityGroup(this, 'LoadBalancerSecurityGroup', {
             vpc,
-            securityGroupName: `rockwell-alb-sg-${environment}`,
-            description: 'Security group for Rockwell Application Load Balancer',
+            securityGroupName: `wakati-alb-sg-${environment}`,
+            description: 'Security group for Wakati Application Load Balancer',
             allowAllOutbound: true,
         });
 
@@ -448,8 +227,8 @@ export class RockwellFargateStack extends cdk.Stack {
         );
 
         // Create Application Load Balancer
-        this.loadBalancer = new elasticloadbalancingv2.ApplicationLoadBalancer(this, 'RockwellLoadBalancer', {
-            loadBalancerName: `rockwell-alb-${environment}`,
+        this.loadBalancer = new elasticloadbalancingv2.ApplicationLoadBalancer(this, 'WakatiLoadBalancer', {
+            loadBalancerName: `wakati-alb-${environment}`,
             vpc,
             internetFacing: true,
         });
@@ -497,8 +276,8 @@ export class RockwellFargateStack extends cdk.Stack {
         // Load balancer DNS names cannot have SSL certificates issued directly
 
         // Create ECS Task Definition with optimized resources for load handling
-        const taskDefinition = new ecs.FargateTaskDefinition(this, 'RockwellTaskDefinition', {
-            family: `rockwell-api-${environment}`,
+        const taskDefinition = new ecs.FargateTaskDefinition(this, 'WakatiTaskDefinition', {
+            family: `wakati-api-${environment}`,
             cpu: environment === 'prod' ? 1024 : 512, // Increase CPU for production
             memoryLimitMiB: environment === 'prod' ? 2048 : 1024, // Increase memory for production
             taskRole,
@@ -510,8 +289,8 @@ export class RockwellFargateStack extends cdk.Stack {
         });
 
         // Add container to task definition
-        const container = taskDefinition.addContainer('RockwellApiContainer', {
-            containerName: 'rockwell-api',
+        const container = taskDefinition.addContainer('WakatiApiContainer', {
+            containerName: 'wakati-api',
             image: ecs.ContainerImage.fromRegistry(`${ecrRepositoryUri}:${imageTag.valueAsString}`),
             logging: ecs.LogDrivers.awsLogs({
                 logGroup,
@@ -536,7 +315,7 @@ export class RockwellFargateStack extends cdk.Stack {
 
 
                 // System Configuration
-                SYSTEM: 'rockwell',
+                SYSTEM: 'wakati',
                 PRODUCT: 'api',
                 ENVIRONMENT: environment,
 
@@ -553,7 +332,7 @@ export class RockwellFargateStack extends cdk.Stack {
                 // Database Configuration
                 DATABASE_URL: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'DatabaseUrlParam', {
-                        parameterName: `/rockwell/${environment}/database_url`,
+                        parameterName: `/wakati/${environment}/database_url`,
                         version: 1
                     })
                 ),
@@ -561,31 +340,31 @@ export class RockwellFargateStack extends cdk.Stack {
                 // Supabase Configuration
                 SUPABASE_URL: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'SupabaseUrlParam', {
-                        parameterName: `/rockwell/${environment}/supabase_url`,
+                        parameterName: `/wakati/${environment}/supabase_url`,
                         version: 1
                     })
                 ),
                 SUPABASE_ANON_KEY: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'SupabaseAnonKeyParam', {
-                        parameterName: `/rockwell/${environment}/supabase_anon_key`,
+                        parameterName: `/wakati/${environment}/supabase_anon_key`,
                         version: 1
                     })
                 ),
                 SUPABASE_JWT_SECRET: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'SupabaseJwtSecretParam', {
-                        parameterName: `/rockwell/${environment}/supabase_jwt_secret`,
+                        parameterName: `/wakati/${environment}/supabase_jwt_secret`,
                         version: 1
                     })
                 ),
                 SUPABASE_SERVICE_ROLE_KEY: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'SupabaseServiceRoleKeyParam', {
-                        parameterName: `/rockwell/${environment}/supabase_service_role_key`,
+                        parameterName: `/wakati/${environment}/supabase_service_role_key`,
                         version: 1
                     })
                 ),
                 SUPABASE_TOKEN_OVERRIDE: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'SupabaseTokenOverrideParam', {
-                        parameterName: `/rockwell/${environment}/supabase_token_override`,
+                        parameterName: `/wakati/${environment}/supabase_token_override`,
                         version: 1
                     })
                 ),
@@ -593,13 +372,13 @@ export class RockwellFargateStack extends cdk.Stack {
                 // API Keys
                 RESEND_APIKEY: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'ResendApiKeyParam', {
-                        parameterName: `/rockwell/${environment}/resend_apikey`,
+                        parameterName: `/wakati/${environment}/resend_apikey`,
                         version: 1
                     })
                 ),
                 CRUD_API_TOKEN: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'CrudApiTokenParam', {
-                        parameterName: `/rockwell/${environment}/crud_api_token`,
+                        parameterName: `/wakati/${environment}/crud_api_token`,
                         version: 1
                     })
                 ),
@@ -607,82 +386,50 @@ export class RockwellFargateStack extends cdk.Stack {
                 // Inngest Configuration
                 INNGEST_API_KEY: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'InngestApiKeyParam', {
-                        parameterName: `/rockwell/${environment}/inngest_api_key`,
+                        parameterName: `/wakati/${environment}/inngest_api_key`,
                         version: 1
                     })
                 ),
                 INNGEST_EVENT_KEY: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'InngestEventKeyParam', {
-                        parameterName: `/rockwell/${environment}/inngest_event_key`,
+                        parameterName: `/wakati/${environment}/inngest_event_key`,
                         version: 1
                     })
                 ),
                 INNGEST_SIGNING_KEY: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'InngestSigningKeyParam', {
-                        parameterName: `/rockwell/${environment}/inngest_signing_key`,
+                        parameterName: `/wakati/${environment}/inngest_signing_key`,
                         version: 1
                     })
                 ),
 
 
-                // Media Processing
-                HLS_TRANSCODE_METHOD: ecs.Secret.fromSsmParameter(
-                    ssm.StringParameter.fromStringParameterAttributes(this, 'HlsTranscodeMethodParam', {
-                        parameterName: `/rockwell/${environment}/hls_transcode_method`,
-                        version: 1
-                    })
-                ),
-                AWS_MEDIACONVERT_ROLE_ARN: ecs.Secret.fromSsmParameter(
-                    ssm.StringParameter.fromStringParameterAttributes(this, 'AwsMediaConvertRoleArnParam', {
-                        parameterName: `/rockwell/${environment}/aws_mediaconvert_role_arn`,
-                        version: 1
-                    })
-                ),
-                AWS_MEDIACONVERT_QUEUE_ARN: ecs.Secret.fromSsmParameter(
-                    ssm.StringParameter.fromStringParameterAttributes(this, 'AwsMediaConvertQueueArnParam', {
-                        parameterName: `/rockwell/${environment}/aws_mediaconvert_queue_arn`,
-                        version: 1
-                    })
-                ),
 
                 // Monitoring & Observability
                 NEW_RELIC_LICENSE_KEY: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'NewRelicLicenseKeyParam', {
-                        parameterName: `/rockwell/${environment}/new_relic_license_key`,
+                        parameterName: `/wakati/${environment}/new_relic_license_key`,
                         version: 1
                     })
                 ),
                 OTEL_EXPORTER_OTLP_ENDPOINT: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'OtelExporterOtlpEndpointParam', {
-                        parameterName: `/rockwell/${environment}/otel_exporter_otlp_endpoint`,
+                        parameterName: `/wakati/${environment}/otel_exporter_otlp_endpoint`,
                         version: 1
                     })
                 ),
                 OTEL_EXPORTER_OTLP_HEADERS: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'OtelExporterOtlpHeadersParam', {
-                        parameterName: `/rockwell/${environment}/otel_exporter_otlp_headers`,
+                        parameterName: `/wakati/${environment}/otel_exporter_otlp_headers`,
                         version: 1
                     })
                 ),
 
-                // AI/ML Services
-                OPENAI_API_KEY: ecs.Secret.fromSsmParameter(
-                    ssm.StringParameter.fromStringParameterAttributes(this, 'OpenAiApiKeyParam', {
-                        parameterName: `/rockwell/${environment}/openai_api_key`,
-                        version: 1
-                    })
-                ),
-                ELEVENLABS_API_KEY: ecs.Secret.fromSsmParameter(
-                    ssm.StringParameter.fromStringParameterAttributes(this, 'ElevenLabsApiKeyParam', {
-                        parameterName: `/rockwell/${environment}/elevenlabs_api_key`,
-                        version: 1
-                    })
-                ),
-
+               
                 // Optional: Redis Configuration
                 REDIS_URL: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'RedisUrlParam', {
-                        parameterName: `/rockwell/${environment}/redis_url`,
+                        parameterName: `/wakati/${environment}/redis_url`,
                         version: 1
                     })
                 ),
@@ -690,32 +437,32 @@ export class RockwellFargateStack extends cdk.Stack {
                 // AWS Configuration
                 AWS_S3_BUCKET_NAME: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'AwsS3BucketNameParam', {
-                        parameterName: `/rockwell/${environment}/aws_s3_bucket_name`,
+                        parameterName: `/wakati/${environment}/aws_s3_bucket_name`,
                         version: 1
                     })
                 ),
                 AWS_CLOUDFRONT_DOMAIN: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'AwsCloudfrontDomainParam', {
-                        parameterName: `/rockwell/${environment}/aws_cloudfront_domain`,
+                        parameterName: `/wakati/${environment}/aws_cloudfront_domain`,
                         version: 1
                     })
                 ),
                 AWS_ACCOUNT_ID: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'AwsAccountIdParam', {
-                        parameterName: `/rockwell/${environment}/aws_account_id`,
+                        parameterName: `/wakati/${environment}/aws_account_id`,
                         version: 1
                     })
                 ),
                 AWS_REGION: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'AwsRegionParam', {
-                        parameterName: `/rockwell/${environment}/aws_region`,
+                        parameterName: `/wakati/${environment}/aws_region`,
                         version: 1
                     })
                 ),
                 // URL Configuration for CDN and API access
                 CDN_BASE_URL: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'CdnBaseUrlParam', {
-                        parameterName: `/rockwell/${environment}/aws_cloudfront_domain`,
+                        parameterName: `/wakati/${environment}/aws_cloudfront_domain`,
                         version: 1
                     })
                 ),
@@ -744,8 +491,8 @@ export class RockwellFargateStack extends cdk.Stack {
         );
 
         // Create ECS Fargate Service with optimized configuration for load handling
-        this.service = new ecs.FargateService(this, 'RockwellService', {
-            serviceName: `rockwell-api-${environment}`,
+        this.service = new ecs.FargateService(this, 'WakatiService', {
+            serviceName: `wakati-api-${environment}`,
             cluster: this.cluster,
             taskDefinition,
             desiredCount: environment === 'prod' ? 3 : 1, // Start with more tasks in production
@@ -766,8 +513,8 @@ export class RockwellFargateStack extends cdk.Stack {
         });
 
         // Create target group for load balancer with optimized settings for load handling
-        const targetGroup = new elasticloadbalancingv2.ApplicationTargetGroup(this, 'RockwellTargetGroup', {
-            targetGroupName: `rockwell-tg-${environment}`,
+        const targetGroup = new elasticloadbalancingv2.ApplicationTargetGroup(this, 'WakatiTargetGroup', {
+            targetGroupName: `wakati-tg-${environment}`,
             vpc,
             port: containerPort.valueAsNumber,
             protocol: elasticloadbalancingv2.ApplicationProtocol.HTTP,
@@ -951,19 +698,6 @@ export class RockwellFargateStack extends cdk.Stack {
             value: vpc.vpcId,
             description: 'ID of the VPC',
             exportName: `${id}-VpcId`,
-        });
-
-        // MediaConvert configuration outputs
-        new cdk.CfnOutput(this, 'MediaConvertRoleArn', {
-            value: mediaConvertRole.roleArn,
-            description: 'ARN of the MediaConvert IAM role',
-            exportName: `${id}-MediaConvertRoleArn`,
-        });
-
-        new cdk.CfnOutput(this, 'MediaConvertQueueArn', {
-            value: mediaConvertQueue.attrArn,
-            description: 'ARN of the MediaConvert queue for HLS transcoding',
-            exportName: `${id}-MediaConvertQueueArn`,
         });
 
         // Add tags to all resources
