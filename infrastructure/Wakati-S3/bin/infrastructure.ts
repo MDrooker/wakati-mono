@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
-import { RockwellInfrastructureStack } from '../lib/rockwell-infrastructure-stack';
+
 import * as dotenv from 'dotenv';
+import { S3Stack } from '../lib/s3-stack';
 
 // Load environment variables
 dotenv.config();
@@ -23,13 +24,13 @@ const env = {
   region,
 };
 
-new RockwellInfrastructureStack(app, `RockwellInfrastructure-${environment}`, {
+new S3Stack(app, `S3Stack-${environment}`, {
   env,
-  stackName: `rockwell-infrastructure-${environment}`,
-  description: `Rockwell application infrastructure for ${environment} environment`,
+  stackName: `S3Stack-infrastructure-${environment}`,
+  description: `S3Stack application infrastructure for ${environment} environment`,
   tags: {
     Environment: environment,
-    Application: 'Rockwell',
+    Application: 'S3',
     ManagedBy: 'CDK',
   },
 });

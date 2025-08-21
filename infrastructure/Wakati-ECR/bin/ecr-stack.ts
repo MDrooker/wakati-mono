@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
-import { RockwellEcrStack } from '../lib/wakati-ecr-stack';
+
 import * as dotenv from 'dotenv';
+import { EcrStack } from '../lib/ecr-stack';
 
 // Load environment variables
 dotenv.config();
@@ -18,11 +19,11 @@ const env = {
 const stackName = process.env.STACK_NAME || 'RockwellEcrStack';
 const environment = process.env.ENVIRONMENT || 'dev';
 
-new RockwellEcrStack(app, stackName, {
+new EcrStack(app, stackName, {
     env,
-    description: `Rockwell ECR Stack for ${environment} environment`,
+    description: `EcrStack ECR Stack for ${environment} environment`,
     tags: {
-        Project: 'Rockwell',
+        Project: 'EcrStack',
         Environment: environment,
         ManagedBy: 'CDK',
     },

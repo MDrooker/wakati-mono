@@ -6,7 +6,7 @@ settings:
 
 importers:
 
-  Rockwell-ECR:
+  Wakati-ECR:
     dependencies:
       aws-cdk-lib:
         specifier: 2.122.0
@@ -37,7 +37,7 @@ importers:
         specifier: ~5.3.3
         version: 5.3.3
 
-  Rockwell-Fargate:
+  Wakati-Fargate:
     dependencies:
       aws-cdk-lib:
         specifier: 2.122.0
@@ -68,38 +68,7 @@ importers:
         specifier: ~5.3.3
         version: 5.3.3
 
-  Rockwell-S3:
-    dependencies:
-      aws-cdk-lib:
-        specifier: 2.122.0
-        version: 2.122.0(constructs@10.4.2)
-      constructs:
-        specifier: ^10.3.0
-        version: 10.4.2
-      dotenv:
-        specifier: ^17.2.0
-        version: 17.2.0
-    devDependencies:
-      '@types/jest':
-        specifier: ^29.5.12
-        version: 29.5.14
-      '@types/node':
-        specifier: 20.11.0
-        version: 20.11.0
-      aws-cdk:
-        specifier: 2.122.0
-        version: 2.122.0
-      jest:
-        specifier: ^29.7.0
-        version: 29.7.0(@types/node@20.11.0)
-      ts-jest:
-        specifier: ^29.1.2
-        version: 29.4.0(@babel/core@7.28.0)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.0))(jest-util@29.7.0)(jest@29.7.0(@types/node@20.11.0))(typescript@5.3.3)
-      typescript:
-        specifier: ~5.3.3
-        version: 5.3.3
-
-  StormRadar-S3:
+  Wakati-S3:
     dependencies:
       aws-cdk-lib:
         specifier: 2.122.0

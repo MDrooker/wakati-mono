@@ -3,7 +3,7 @@ import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 
-export class WakatiEcrStack extends cdk.Stack {
+export class EcrStack extends cdk.Stack {
     public readonly repository: ecr.Repository;
 
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {

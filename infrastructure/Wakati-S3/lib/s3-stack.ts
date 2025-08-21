@@ -16,7 +16,7 @@ import * as dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
-export class RockwellInfrastructureStack extends cdk.Stack {
+export class S3Stack extends cdk.Stack {
   public readonly assetsBucket: s3.Bucket;
   public readonly cloudfrontDistribution: cloudfront.Distribution;
   public readonly uploadNotificationTopic: sns.Topic;
