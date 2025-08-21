@@ -9,11 +9,15 @@ export class EcrStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
+        let env = (props?.env || {}) as { product?: string, system?: string };
         // Get environment from stack name or default to 'dev'
         const environment = id.includes('prod') ? 'prod' :
             id.includes('staging') ? 'staging' : 'dev';        // Create ECR repository for Wakati API
+        const productName = env.product || 'wakati';
+        const systemName = env.system || 'api';
+        console.log(env);
         this.repository = new ecr.Repository(this, 'WakatiApiRepository', {
-            repositoryName: `wakati-api-${environment}`,
+            repositoryName: `${productName}-${systemName}-${environment}`,
             imageScanOnPush: true,
             imageTagMutability: ecr.TagMutability.MUTABLE,
             lifecycleRules: [

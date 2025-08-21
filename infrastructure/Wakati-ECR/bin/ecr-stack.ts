@@ -14,10 +14,14 @@ const app = new cdk.App();
 const env = {
     account: process.env.CDK_DEFAULT_ACCOUNT || process.env.AWS_ACCOUNT_ID,
     region: process.env.CDK_DEFAULT_REGION || process.env.AWS_REGION || 'us-east-1',
+    environment: process.env.ENVIRONMENT || 'dev',
+    system: process.env.SYSTEM || 'Wakati',
+    product: process.env.PRODUCT || 'Wakati',
+    stackName: process.env.STACK_NAME || 'WakatiEcrStack',
 };
 
-const stackName = process.env.STACK_NAME || 'RockwellEcrStack';
-const environment = process.env.ENVIRONMENT || 'dev';
+const stackName = env.stackName;
+const environment = env.environment;
 
 new EcrStack(app, stackName, {
     env,

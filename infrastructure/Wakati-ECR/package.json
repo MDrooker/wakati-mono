@@ -1,8 +1,8 @@
 {
-  "name": "rockwell-ecr-infrastructure",
+  "name": "ecr-infrastructure",
   "version": "0.1.0",
   "bin": {
-    "rockwell-ecr": "bin/ecr-stack.js"
+    "ecr": "bin/ecr-stack.js"
   },
   "scripts": {
     "build": "tsc",

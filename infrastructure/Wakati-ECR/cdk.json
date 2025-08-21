@@ -1,5 +1,5 @@
 {
-  "app": "npx ts-node --prefer-ts-exts bin/rockwell-ecr.ts",
+  "app": "npx ts-node --prefer-ts-exts bin/ecr-stack.ts",
   "watch": {
     "include": [
       "**"
