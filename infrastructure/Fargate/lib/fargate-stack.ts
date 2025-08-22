@@ -12,24 +12,26 @@ import * as mediaconvert from 'aws-cdk-lib/aws-mediaconvert';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 
-export interface WakatiFargateStackProps extends cdk.StackProps {
+export interface FargateStackProps extends cdk.StackProps {
     ecrStackName: string;
 }
 
-export class WakatiFargateStack extends cdk.Stack {
+export class Stack extends cdk.Stack {
     public readonly cluster: ecs.Cluster;
     public readonly service: ecs.FargateService;
     public readonly loadBalancer: elasticloadbalancingv2.ApplicationLoadBalancer;
 
-    constructor(scope: Construct, id: string, props: WakatiFargateStackProps) {
+    constructor(scope: Construct, id: string, props: FargateStackProps) {
         super(scope, id, props);
-
+        let env = (props?.env || {}) as { product?: string, system?: string };
         // Get environment from stack name or default to 'dev'
-        const environment = id.includes('prod') ? 'prod' :
-            id.includes('staging') ? 'staging' : 'dev';
+        const environment = id.includes('prod') ? 'prod' : id.includes('staging') ? 'staging' : 'dev';        // Create ECR repository for Wakati API
+        const productName = env.product || 'wakati';
+        const systemName = env.system || 'api';
 
         // Import ECR repository ARN from the ECR stack
         const ecrRepositoryUri = cdk.Fn.importValue(`${props.ecrStackName}-RepositoryUri`);
+        console.log(`Using ECR repository URI: ${ecrRepositoryUri}`);
 
         // Add a parameter for image tag to make deployments more flexible
         const imageTag = new cdk.CfnParameter(this, 'ImageTag', {
@@ -72,8 +74,8 @@ export class WakatiFargateStack extends cdk.Stack {
         });
 
         // Create VPC with public and private subnets
-        const vpc = new ec2.Vpc(this, 'WakatiVpc', {
-            vpcName: `wakati-vpc-${environment}`,
+        const vpc = new ec2.Vpc(this, `${systemName}Vpc`, {
+            vpcName: `${systemName}-vpc-${environment}`,
             maxAzs: 2,
             natGateways: 1, // Cost optimization - use 1 NAT gateway
             subnetConfiguration: [
@@ -91,36 +93,36 @@ export class WakatiFargateStack extends cdk.Stack {
         });
 
         // Create ECS Cluster
-        this.cluster = new ecs.Cluster(this, 'WakatiCluster', {
-            clusterName: `wakati-cluster-${environment}`,
+        this.cluster = new ecs.Cluster(this, `${systemName}Cluster`, {
+            clusterName: `${systemName}-cluster-${environment}`,
             vpc,
             containerInsights: true,
         });
 
         // Create service discovery namespace
-        const namespace = new servicediscovery.PrivateDnsNamespace(this, 'WakatiNamespace', {
-            name: `wakati.${environment}.local`,
+        const namespace = new servicediscovery.PrivateDnsNamespace(this, `${systemName}Namespace`, {
+            name: `${systemName}.${environment}.local`,
             vpc,
-            description: 'Service discovery namespace for Wakati services',
+            description: `Service discovery namespace for ${systemName} services`,
         });
 
         // Create CloudWatch Log Group
-        const logGroup = new logs.LogGroup(this, 'WakatiLogGroup', {
-            logGroupName: `/ecs/wakati-api-${environment}`,
+        const logGroup = new logs.LogGroup(this, `${systemName}-${productName}LogGroup`, {
+            logGroupName: `/ecs/${systemName}-${productName}-${environment}`,
             retention: logs.RetentionDays.ONE_WEEK,
             removalPolicy: cdk.RemovalPolicy.DESTROY,
         });
 
         // Create IAM roles for ECS tasks
-        const taskRole = new iam.Role(this, 'WakatiTaskRole', {
+        const taskRole = new iam.Role(this, `${systemName}TaskRole`, {
             assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
-            roleName: `wakati-task-role-${environment}`,
-            description: 'IAM role for Wakati ECS tasks',
+            roleName: `${systemName}-task-role-${environment}`,
+            description: `IAM role for ${systemName} ECS tasks`,
         });
 
-        const executionRole = new iam.Role(this, 'WakatiExecutionRole', {
+        const executionRole = new iam.Role(this, `${systemName}ExecutionRole`, {
             assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
-            roleName: `wakati-execution-role-${environment}`,
+            roleName: `${systemName}-execution-role-${environment}`,
             managedPolicies: [
                 iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonECSTaskExecutionRolePolicy'),
             ],
@@ -184,7 +186,7 @@ export class WakatiFargateStack extends cdk.Stack {
             })
         );
 
-      
+
 
         // Add CloudFront permissions for CDN cache invalidation
         taskRole.addToPolicy(
@@ -202,14 +204,11 @@ export class WakatiFargateStack extends cdk.Stack {
         );
 
 
-
-
-
         // Create security group for Application Load Balancer
         const loadBalancerSecurityGroup = new ec2.SecurityGroup(this, 'LoadBalancerSecurityGroup', {
             vpc,
-            securityGroupName: `wakati-alb-sg-${environment}`,
-            description: 'Security group for Wakati Application Load Balancer',
+            securityGroupName: `${systemName}-alb-sg-${environment}`,
+            description: `Security group for ${systemName} Application Load Balancer`,
             allowAllOutbound: true,
         });
 
@@ -227,8 +226,8 @@ export class WakatiFargateStack extends cdk.Stack {
         );
 
         // Create Application Load Balancer
-        this.loadBalancer = new elasticloadbalancingv2.ApplicationLoadBalancer(this, 'WakatiLoadBalancer', {
-            loadBalancerName: `wakati-alb-${environment}`,
+        this.loadBalancer = new elasticloadbalancingv2.ApplicationLoadBalancer(this, `${systemName}LoadBalancer`, {
+            loadBalancerName: `${systemName}-alb-${environment}`,
             vpc,
             internetFacing: true,
         });
@@ -276,8 +275,8 @@ export class WakatiFargateStack extends cdk.Stack {
         // Load balancer DNS names cannot have SSL certificates issued directly
 
         // Create ECS Task Definition with optimized resources for load handling
-        const taskDefinition = new ecs.FargateTaskDefinition(this, 'WakatiTaskDefinition', {
-            family: `wakati-api-${environment}`,
+        const taskDefinition = new ecs.FargateTaskDefinition(this, `${systemName}-${productName}-taskDefinition`, {
+            family: `${systemName}-${productName}-${environment}`,
             cpu: environment === 'prod' ? 1024 : 512, // Increase CPU for production
             memoryLimitMiB: environment === 'prod' ? 2048 : 1024, // Increase memory for production
             taskRole,
@@ -290,7 +289,7 @@ export class WakatiFargateStack extends cdk.Stack {
 
         // Add container to task definition
         const container = taskDefinition.addContainer('WakatiApiContainer', {
-            containerName: 'wakati-api',
+            containerName: `${systemName}-${productName}`,
             image: ecs.ContainerImage.fromRegistry(`${ecrRepositoryUri}:${imageTag.valueAsString}`),
             logging: ecs.LogDrivers.awsLogs({
                 logGroup,
@@ -315,8 +314,8 @@ export class WakatiFargateStack extends cdk.Stack {
 
 
                 // System Configuration
-                SYSTEM: 'wakati',
-                PRODUCT: 'api',
+                SYSTEM: `${systemName}`,
+                PRODUCT: `${productName}`,
                 ENVIRONMENT: environment,
 
                 // Service Configuration
@@ -332,7 +331,7 @@ export class WakatiFargateStack extends cdk.Stack {
                 // Database Configuration
                 DATABASE_URL: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'DatabaseUrlParam', {
-                        parameterName: `/wakati/${environment}/database_url`,
+                        parameterName: `/${systemName}-${productName}/${environment}/database_url`,
                         version: 1
                     })
                 ),
@@ -340,31 +339,31 @@ export class WakatiFargateStack extends cdk.Stack {
                 // Supabase Configuration
                 SUPABASE_URL: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'SupabaseUrlParam', {
-                        parameterName: `/wakati/${environment}/supabase_url`,
+                        parameterName: `/${systemName}-${productName}/${environment}/supabase_url`,
                         version: 1
                     })
                 ),
                 SUPABASE_ANON_KEY: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'SupabaseAnonKeyParam', {
-                        parameterName: `/wakati/${environment}/supabase_anon_key`,
+                        parameterName: `/${systemName}-${productName}/${environment}/supabase_anon_key`,
                         version: 1
                     })
                 ),
                 SUPABASE_JWT_SECRET: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'SupabaseJwtSecretParam', {
-                        parameterName: `/wakati/${environment}/supabase_jwt_secret`,
+                        parameterName: `/${systemName}-${productName}/${environment}/supabase_jwt_secret`,
                         version: 1
                     })
                 ),
                 SUPABASE_SERVICE_ROLE_KEY: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'SupabaseServiceRoleKeyParam', {
-                        parameterName: `/wakati/${environment}/supabase_service_role_key`,
+                        parameterName: `/${systemName}-${productName}/${environment}/supabase_service_role_key`,
                         version: 1
                     })
                 ),
                 SUPABASE_TOKEN_OVERRIDE: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'SupabaseTokenOverrideParam', {
-                        parameterName: `/wakati/${environment}/supabase_token_override`,
+                        parameterName: `/${systemName}-${productName}/${environment}/supabase_token_override`,
                         version: 1
                     })
                 ),
@@ -372,13 +371,13 @@ export class WakatiFargateStack extends cdk.Stack {
                 // API Keys
                 RESEND_APIKEY: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'ResendApiKeyParam', {
-                        parameterName: `/wakati/${environment}/resend_apikey`,
+                        parameterName: `/${systemName}-${productName}/${environment}/resend_apikey`,
                         version: 1
                     })
                 ),
                 CRUD_API_TOKEN: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'CrudApiTokenParam', {
-                        parameterName: `/wakati/${environment}/crud_api_token`,
+                        parameterName: `/${systemName}-${productName}/${environment}/crud_api_token`,
                         version: 1
                     })
                 ),
@@ -386,19 +385,19 @@ export class WakatiFargateStack extends cdk.Stack {
                 // Inngest Configuration
                 INNGEST_API_KEY: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'InngestApiKeyParam', {
-                        parameterName: `/wakati/${environment}/inngest_api_key`,
+                        parameterName: `/${systemName}-${productName}/${environment}/inngest_api_key`,
                         version: 1
                     })
                 ),
                 INNGEST_EVENT_KEY: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'InngestEventKeyParam', {
-                        parameterName: `/wakati/${environment}/inngest_event_key`,
+                        parameterName: `/${systemName}-${productName}/${environment}/inngest_event_key`,
                         version: 1
                     })
                 ),
                 INNGEST_SIGNING_KEY: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'InngestSigningKeyParam', {
-                        parameterName: `/wakati/${environment}/inngest_signing_key`,
+                        parameterName: `/${systemName}-${productName}/${environment}/inngest_signing_key`,
                         version: 1
                     })
                 ),
@@ -408,28 +407,28 @@ export class WakatiFargateStack extends cdk.Stack {
                 // Monitoring & Observability
                 NEW_RELIC_LICENSE_KEY: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'NewRelicLicenseKeyParam', {
-                        parameterName: `/wakati/${environment}/new_relic_license_key`,
+                        parameterName: `/${systemName}-${productName}/${environment}/new_relic_license_key`,
                         version: 1
                     })
                 ),
                 OTEL_EXPORTER_OTLP_ENDPOINT: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'OtelExporterOtlpEndpointParam', {
-                        parameterName: `/wakati/${environment}/otel_exporter_otlp_endpoint`,
+                        parameterName: `/${systemName}-${productName}/${environment}/otel_exporter_otlp_endpoint`,
                         version: 1
                     })
                 ),
                 OTEL_EXPORTER_OTLP_HEADERS: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'OtelExporterOtlpHeadersParam', {
-                        parameterName: `/wakati/${environment}/otel_exporter_otlp_headers`,
+                        parameterName: `/${systemName}-${productName}/${environment}/otel_exporter_otlp_headers`,
                         version: 1
                     })
                 ),
 
-               
+
                 // Optional: Redis Configuration
                 REDIS_URL: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'RedisUrlParam', {
-                        parameterName: `/wakati/${environment}/redis_url`,
+                        parameterName: `/${systemName}-${productName}/${environment}/redis_url`,
                         version: 1
                     })
                 ),
@@ -437,32 +436,32 @@ export class WakatiFargateStack extends cdk.Stack {
                 // AWS Configuration
                 AWS_S3_BUCKET_NAME: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'AwsS3BucketNameParam', {
-                        parameterName: `/wakati/${environment}/aws_s3_bucket_name`,
+                        parameterName: `/${systemName}-${productName}/${environment}/aws_s3_bucket_name`,
                         version: 1
                     })
                 ),
                 AWS_CLOUDFRONT_DOMAIN: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'AwsCloudfrontDomainParam', {
-                        parameterName: `/wakati/${environment}/aws_cloudfront_domain`,
+                        parameterName: `/${systemName}-${productName}/${environment}/aws_cloudfront_domain`,
                         version: 1
                     })
                 ),
                 AWS_ACCOUNT_ID: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'AwsAccountIdParam', {
-                        parameterName: `/wakati/${environment}/aws_account_id`,
+                        parameterName: `/${systemName}-${productName}/${environment}/aws_account_id`,
                         version: 1
                     })
                 ),
                 AWS_REGION: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'AwsRegionParam', {
-                        parameterName: `/wakati/${environment}/aws_region`,
+                        parameterName: `/${systemName}-${productName}/${environment}/aws_region`,
                         version: 1
                     })
                 ),
                 // URL Configuration for CDN and API access
                 CDN_BASE_URL: ecs.Secret.fromSsmParameter(
                     ssm.StringParameter.fromStringParameterAttributes(this, 'CdnBaseUrlParam', {
-                        parameterName: `/wakati/${environment}/aws_cloudfront_domain`,
+                        parameterName: `/${systemName}-${productName}/${environment}/aws_cloudfront_domain`,
                         version: 1
                     })
                 ),
@@ -478,8 +477,8 @@ export class WakatiFargateStack extends cdk.Stack {
         // Create security group for ECS service
         const serviceSecurityGroup = new ec2.SecurityGroup(this, 'ServiceSecurityGroup', {
             vpc,
-            securityGroupName: `rockwell-service-sg-${environment}`,
-            description: 'Security group for Rockwell ECS service',
+            securityGroupName: `${systemName}-service-sg-${environment}`,
+            description: `Security group for ${systemName} ECS service`,
             allowAllOutbound: true,
         });
 
@@ -491,8 +490,8 @@ export class WakatiFargateStack extends cdk.Stack {
         );
 
         // Create ECS Fargate Service with optimized configuration for load handling
-        this.service = new ecs.FargateService(this, 'WakatiService', {
-            serviceName: `wakati-api-${environment}`,
+        this.service = new ecs.FargateService(this, `${systemName}Service`, {
+            serviceName: `${systemName}-api-${environment}`,
             cluster: this.cluster,
             taskDefinition,
             desiredCount: environment === 'prod' ? 3 : 1, // Start with more tasks in production
@@ -513,8 +512,8 @@ export class WakatiFargateStack extends cdk.Stack {
         });
 
         // Create target group for load balancer with optimized settings for load handling
-        const targetGroup = new elasticloadbalancingv2.ApplicationTargetGroup(this, 'WakatiTargetGroup', {
-            targetGroupName: `wakati-tg-${environment}`,
+        const targetGroup = new elasticloadbalancingv2.ApplicationTargetGroup(this, `${systemName}TargetGroup`, {
+            targetGroupName: `${systemName}-tg-${environment}`,
             vpc,
             port: containerPort.valueAsNumber,
             protocol: elasticloadbalancingv2.ApplicationProtocol.HTTP,
@@ -701,7 +700,7 @@ export class WakatiFargateStack extends cdk.Stack {
         });
 
         // Add tags to all resources
-        cdk.Tags.of(this).add('Project', 'Rockwell');
+        cdk.Tags.of(this).add('Project', `${systemName}`);
         cdk.Tags.of(this).add('Environment', environment);
         cdk.Tags.of(this).add('Component', 'Fargate');
         cdk.Tags.of(this).add('ManagedBy', 'CDK');

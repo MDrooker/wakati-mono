@@ -1,5 +1,5 @@
 {
-  "app": "npx ts-node --prefer-ts-exts bin/wakati-fargate.ts",
+  "app": "npx ts-node --prefer-ts-exts bin/fargate.ts",
   "watch": {
     "include": [
       "**"

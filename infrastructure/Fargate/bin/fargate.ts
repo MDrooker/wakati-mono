@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
-import { RockwellFargateStack } from '../lib/rockwell-fargate-stack';
+import { Stack } from '../lib/fargate-stack';
 
 import * as dotenv from 'dotenv';
 
@@ -19,32 +19,17 @@ const env = {
 const stackName = process.env.STACK_NAME || 'RockwellFargateStack';
 const environment = process.env.ENVIRONMENT || 'dev';
 const ecrStackName = process.env.ECR_STACK_NAME || 'RockwellEcrStack';
+const systemName = process.env.SYSTEM || 'Rockwell';
 
 // Deploy full stack by default
-new RockwellFargateStack(app, stackName, {
+new Stack(app, stackName, {
     env,
-    description: `Rockwell Fargate Stack for ${environment} environment`,
+    description: `${stackName} Fargate Stack for ${environment} environment`,
     ecrStackName,
     tags: {
-        Project: 'Rockwell',
+        Project: `${systemName}`,
         Environment: environment,
         ManagedBy: 'CDK',
     },
 });
-
-// Optional: Deploy minimal stack for debugging
-// Uncomment this section to deploy the minimal stack instead
-
-// new RockwellFargateMinimalStack(app, `${stackName}Minimal`, {
-//     env,
-//     description: `Minimal Rockwell Fargate Stack for debugging ${environment}`,
-//     ecrStackName,
-//     tags: {
-//         Project: 'Rockwell',
-//         Environment: environment,
-//         Component: 'Minimal',
-//         Purpose: 'Debugging',
-//         ManagedBy: 'CDK',
-//     },
-// });
 

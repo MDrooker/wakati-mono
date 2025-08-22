@@ -1,8 +1,8 @@
 {
-  "name": "rockwell-fargate-infrastructure",
+  "name": "fargate-infrastructure",
   "version": "0.1.0",
   "bin": {
-    "rockwell-fargate": "bin/rockwell-fargate.js"
+    "rockwell-fargate": "bin/fargate.js"
   },
   "scripts": {
     "build": "tsc",

@@ -11,13 +11,12 @@ export class EcrStack extends cdk.Stack {
 
         let env = (props?.env || {}) as { product?: string, system?: string };
         // Get environment from stack name or default to 'dev'
-        const environment = id.includes('prod') ? 'prod' :
-            id.includes('staging') ? 'staging' : 'dev';        // Create ECR repository for Wakati API
+        const environment = id.includes('prod') ? 'prod' : id.includes('staging') ? 'staging' : 'dev';        // Create ECR repository for Wakati API
         const productName = env.product || 'wakati';
         const systemName = env.system || 'api';
         console.log(env);
-        this.repository = new ecr.Repository(this, 'WakatiApiRepository', {
-            repositoryName: `${productName}-${systemName}-${environment}`,
+        this.repository = new ecr.Repository(this, `${systemName}-${productName}-${environment}Repository`, {
+            repositoryName: `${systemName}-${productName}-${environment}`,
             imageScanOnPush: true,
             imageTagMutability: ecr.TagMutability.MUTABLE,
             lifecycleRules: [
@@ -49,7 +48,7 @@ export class EcrStack extends cdk.Stack {
 
         // Create IAM role for Fargate tasks to pull from ECR
         const fargateTaskRole = new iam.Role(this, 'FargateTaskEcrRole', {
-            roleName: `wakati-fargate-ecr-${environment}`,
+            roleName: `${systemName}-${productName}-fargate-ecr-${environment}`,
             assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
             description: 'Role for Fargate tasks to pull Docker images from ECR',
         });
@@ -60,14 +59,14 @@ export class EcrStack extends cdk.Stack {
         // Output the repository URI
         new cdk.CfnOutput(this, 'RepositoryUri', {
             value: this.repository.repositoryUri,
-            description: 'ECR Repository URI for Wakati API',
+            description: `ECR Repository URI for ${systemName} ${productName}`,
             exportName: `${id}-RepositoryUri`,
         });
 
         // Output the repository ARN
         new cdk.CfnOutput(this, 'RepositoryArn', {
             value: this.repository.repositoryArn,
-            description: 'ECR Repository ARN for Wakati API',
+            description: `ECR Repository ARN for ${systemName} ${productName}`,
             exportName: `${id}-RepositoryArn`,
         });
 
@@ -79,9 +78,9 @@ export class EcrStack extends cdk.Stack {
         });
 
         // Add tags to all resources
-        cdk.Tags.of(this).add('Project', 'Wakati');
+        cdk.Tags.of(this).add('Project', productName);
         cdk.Tags.of(this).add('Environment', environment);
-        cdk.Tags.of(this).add('Component', 'ECR');
+        cdk.Tags.of(this).add('Component', systemName);
         cdk.Tags.of(this).add('ManagedBy', 'CDK');
     }
 }

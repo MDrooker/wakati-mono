@@ -6,7 +6,7 @@ settings:
 
 importers:
 
-  Wakati-ECR:
+  ECR:
     dependencies:
       aws-cdk-lib:
         specifier: 2.122.0
@@ -37,7 +37,7 @@ importers:
         specifier: ~5.3.3
         version: 5.3.3
 
-  Wakati-Fargate:
+  Fargate:
     dependencies:
       aws-cdk-lib:
         specifier: 2.122.0
