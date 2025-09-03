@@ -8,12 +8,6 @@ import { Repository } from 'typeorm';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import {
-  PaginationArgs,
-  SortArgs,
-  applyCursorPagination,
-  ConnectionResult,
-} from '../../common/graphql/utils/pagination.util';
 import { User } from './entities/user.entity';
 import { TenantContextService } from '../tenant/services/tenant-context.service';
 
@@ -23,7 +17,7 @@ export class UserService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private tenantContextService: TenantContextService,
-  ) {}
+  ) { }
 
   // Static method to generate User URN
   static generateUserUrn(): string {
@@ -198,34 +192,6 @@ export class UserService {
     });
   }
 
-  async findAllWithPagination(
-    filter?: any,
-    pagination?: PaginationArgs,
-    sort?: SortArgs,
-  ): Promise<ConnectionResult<User>> {
-    const queryBuilder = this.userRepository.createQueryBuilder('user');
-
-    queryBuilder.andWhere('user.isActive = :isActive', { isActive: true });
-
-    if (filter?.isVerified !== undefined) {
-      queryBuilder.andWhere('user.isVerified = :isVerified', {
-        isVerified: filter.isVerified,
-      });
-    }
-
-    if (filter?.search) {
-      queryBuilder.andWhere(
-        '(user.firstName ILIKE :search OR user.lastName ILIKE :search OR user.email ILIKE :search OR user.displayName ILIKE :search)',
-        { search: `%${filter.search}%` },
-      );
-    }
-
-    return applyCursorPagination(
-      queryBuilder,
-      pagination || { first: 20 },
-      sort || { field: 'createdAt', direction: 'DESC' },
-    );
-  }
 
   async verifyUser(id: string): Promise<User> {
     const user = await this.userRepository.findOne({

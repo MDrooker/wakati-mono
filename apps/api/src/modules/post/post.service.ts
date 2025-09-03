@@ -12,12 +12,6 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { VotePostDto } from './dto/post-actions.dto';
 import {
-  PaginationArgs,
-  SortArgs,
-  applyCursorPagination,
-  ConnectionResult,
-} from '../../common/graphql/utils/pagination.util';
-import {
   Post,
   PostType,
   PostStatus,

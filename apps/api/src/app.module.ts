@@ -19,8 +19,6 @@ import { TypeORMDatabaseModule } from './common/database/database.module';
 import { SupabaseModule } from './common/supabase/supabase.module';
 import { AuthModule } from './common/auth/auth.module';
 import { UtilitiesModule } from './common/utilities/utilities.module';
-import { OperationModule } from './modules/operation/operation.module';
-import GraphQLJSON from 'graphql-type-json';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { DevtoolsModule } from '@nestjs/devtools-integration';
 
@@ -101,43 +99,13 @@ const OpenTelemetryModuleConfig = OpenTelemetryModule.forRootAsync({
     // SupabaseModule,
     // AuthModule,
     // SSEChannelModule,
-    // GraphQLModule.forRootAsync<YogaDriverConfig>({
-    //   driver: YogaDriver,
-    //   useFactory: () => {
-    //     logger.log('🎯 Configuring GraphQL with Yoga driver...');
-    //     return {
-    //       typePaths: ['./**/*.graphql'],
-    //       plugins: [
-    //         // Use the SSE plugin for subscriptions
-    //         // useGraphQLSSE(),
-    //         // useLogger({
-    //         //     logFn: (eventName, args) => {
-    //         //         // Event could be execute-start / execute-end / subscribe-start / subscribe-end / etc.
-    //         //         // args will include the arguments passed to execute/subscribe (in case of "start" event) and additional result in case of "end" event.
-    //         //         console.log(eventName, args);
-    //         //     }
-    //         // })
-    //       ],
-    //       resolvers: {
-    //         JSON: GraphQLJSON,
-    //       },
-    //       context: ({ req, res }) => ({ req, res }),
-    //       typeDefs: [constraintDirectiveTypeDefs, DateTypeDefinition],
-    //       fieldResolverEnhancers: ['interceptors'],
-    //       transformSchema: (schema) => {
-    //         schema = constraintDirective()(schema);
-    //         return schema;
-    //       },
-    //     };
-    //   },
-    // }),
+   
     // ServeStaticModule.forRoot({
     //   rootPath: join(__dirname, '..', 'client'),
     //   renderPath: '/client',
     // }),
     // CommonModule,
     // UtilitiesModule,
-    // OperationModule,
     UserModule,
     // TenantModule,
     PostModule,
@@ -150,7 +118,6 @@ export class ApplicationModule implements OnModuleInit {
   onModuleInit() {
     // Check for critical environment variables
     const criticalEnvVars = ['DATABASE_URL', 'PORT', 'SYSTEM', 'PRODUCT'];
-
     criticalEnvVars.forEach((envVar) => {
       if (!process.env[envVar]) {
         logger.warn(`⚠️  Environment variable ${envVar} is not set`);

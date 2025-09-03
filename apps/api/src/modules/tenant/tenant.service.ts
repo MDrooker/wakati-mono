@@ -8,12 +8,6 @@ import { Repository } from 'typeorm';
 
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
-import {
-  PaginationArgs,
-  SortArgs,
-  applyCursorPagination,
-  ConnectionResult,
-} from '../../common/graphql/utils/pagination.util';
 import { Tenant } from './entities/tenant.entity';
 
 @Injectable()
@@ -21,7 +15,7 @@ export class TenantService {
   constructor(
     @InjectRepository(Tenant)
     private tenantRepository: Repository<Tenant>,
-  ) {}
+  ) { }
 
   static generateTenanturn(): string {
     return Tenant.generateTenanturn();

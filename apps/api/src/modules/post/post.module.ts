@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostService } from './post.service';
 import { PostController } from './post.controller';
-import { PostResolver } from './post.resolver';
+
 import { Post } from './entities/post.entity';
 
 import { InngestModule } from '../../common/inngest/inngest.module';
@@ -22,7 +22,7 @@ import { SseChannelService } from 'src/common/ssechannel/ssechannel.service';
   controllers: [PostController, PostSSEController],
   providers: [
     PostService,
-    PostResolver,
+
     PostEventsService,
     TenantContextService,
     TenantInterceptor,

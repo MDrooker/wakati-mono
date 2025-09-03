@@ -205,7 +205,6 @@ async function bootstrap() {
     await app.listen(port, '0.0.0.0');
     logger.log(`✅ API server started successfully on port ${port}`);
     logger.log(`📖 Swagger docs available at: http://localhost:${port}/api`);
-    logger.log(`🎯 GraphQL playground available at: http://localhost:${port}/graphql`);
   } catch (error) {
     // Log specific error types for better debugging
     logger.error('❌ Failed to start application:', error.message);
