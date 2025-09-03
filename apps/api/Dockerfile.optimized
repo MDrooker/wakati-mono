@@ -71,11 +71,7 @@ ENV TURBO_TELEMETRY_DISABLED=1
 # Build the application
 RUN pnpm --filter=rockwell-api build
 
-# Generate GraphQL types and bundle schema files
-RUN cd apps/api && \
-    pnpm types && \
-    pnpm code && \
-    pnpm bundle
+
 
 # Remove source maps and development files to reduce size
 RUN find ./apps/api/dist -name "*.map" -delete && \

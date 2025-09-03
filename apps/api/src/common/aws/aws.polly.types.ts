@@ -3,7 +3,6 @@
  * This file centralizes type definitions to avoid circular dependencies
  */
 
-import { registerEnumType } from '@nestjs/graphql';
 
 export enum TranscribeLanguage {
   EN_US = 'en-US',
@@ -43,26 +42,7 @@ export enum PollyEngine {
   STANDARD = 'standard',
 }
 
-// Register GraphQL enums to avoid circular dependency issues
-registerEnumType(TranscribeLanguage, {
-  name: 'TranscribeLanguage',
-  description: 'Supported languages for transcription',
-});
 
-registerEnumType(PollyVoiceId, {
-  name: 'PollyVoiceId',
-  description: 'Available Polly voice identifiers',
-});
-
-registerEnumType(PollySpeakingStyle, {
-  name: 'PollySpeakingStyle',
-  description: 'Available speaking styles for Polly synthesis',
-});
-
-registerEnumType(PollyEngine, {
-  name: 'PollyEngine',
-  description: 'Polly synthesis engines',
-});
 
 // Additional shared interfaces can be added here as needed
 export interface AudioResult {

@@ -171,7 +171,6 @@ The service gracefully handles unsupported combinations:
 - If a voice doesn't support newscaster style, it falls back to the default voice behavior
 - Logs are generated to help debug voice/style compatibility issues
 
-## Integration with GraphQL/REST APIs
 
 You can expose these features through your API endpoints:
 

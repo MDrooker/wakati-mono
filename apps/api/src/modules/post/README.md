@@ -76,23 +76,6 @@ Base path: `/posts`
 
 All endpoints optionally accept `tenanturn` query parameter for scoping.
 
-## GraphQL API
-
-Key Types & Inputs (excerpt – see `post.graphql`):
-
-Queries:
-- `post(posturn: String!, userurn: String, tenanturn: String): Post`
-- `posts(userId: String, pagination: PaginationInput, sort: SortInput, tenanturn: String): PostConnection!`
-- `postsByTags(tags: [String!]!, userId: String, tenanturn: String): [Post!]!`
-- `postsByUser(userurn: String!, tenanturn: String): [Post!]!`
-- `postReplies(posturn: String!, tenanturn: String): [Post!]!`
-
-Mutations:
-- `createPost(createPostInput: CreatePostInput!, tenanturn: String): Post!`
-- `updatePost(updatePostInput: UpdatePostInput!, tenanturn: String): Post!`
-- `deletePost(posturn: String!, userurn: String!, tenanturn: String): Boolean!`
-- `votePost(posturn: String!, vote: Int!, userurn: String!, tenanturn: String): Post!`
-- `publishPost(posturn: String!, userurn: String!, tenanturn: String): Post!`
 
 Computed Fields: `score`, `hotScore`, `canEdit`, `isPublished`, `isComment`, `hasReplies`, `isModerated`.
 

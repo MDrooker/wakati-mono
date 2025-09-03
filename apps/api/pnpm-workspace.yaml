@@ -1,5 +1,4 @@
 onlyBuiltDependencies:
-  - '@apollo/protobufjs'
   - '@contrast/fn-inspect'
   - '@nestjs/core'
   - '@newrelic/fn-inspect'
@@ -8,5 +7,4 @@ onlyBuiltDependencies:
   - '@swc/core'
   - esbuild
   - protobufjs
-  - sharp
   - unrs-resolver

@@ -1,4 +1,3 @@
-import { config } from './../../../../../mainsite/src/middleware';
 import {
   type CanActivate,
   type ExecutionContext,
@@ -7,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { SupabaseService } from '../supabase.service';
 import { FastifyRequestType } from 'fastify/types/type-provider';
-import { GqlExecutionContext } from '@nestjs/graphql';
+
 import { ConfigService } from '@nestjs/config';
 import { SetMetadata } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -23,15 +22,10 @@ export class AuthGuard implements CanActivate {
     private readonly reflector: Reflector,
   ) {}
   getRequest(context: ExecutionContext) {
-    // Detect if it's a GraphQL or REST request
     if (context.getType() === 'http') {
       // REST request
       return context.switchToHttp().getRequest();
-    } else {
-      // GraphQL request
-      const ctx = GqlExecutionContext.create(context);
-      return ctx.getContext().req;
-    }
+    } 
   }
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = this.getRequest(context) as FastifyRequestType;

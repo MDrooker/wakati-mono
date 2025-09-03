@@ -13,8 +13,6 @@ import {
 } from 'typeorm';
 import { customAlphabet } from 'nanoid';
 import { BaseEntity } from 'src/common/database/entities/base.entity';
-
-
 const nanoid = customAlphabet('1234567890abcdef', 5);
 
 export enum PostType {

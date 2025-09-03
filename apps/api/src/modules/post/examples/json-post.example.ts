@@ -66,16 +66,6 @@ export const createJsonPostExample = {
   allowComments: true,
 };
 
-// Example GraphQL mutation variables
-export const graphqlMutationExample = {
-  input: {
-    title: 'Rich Content with Editor.js',
-    postType: 'JSON',
-    bodyJson: editorJsExample,
-    tags: ['technology', 'content-creation'],
-    userurn: 'nesting:rockwell.user:example123',
-  },
-};
 
 // What the extracted plain text would look like
 export const expectedPlainText =

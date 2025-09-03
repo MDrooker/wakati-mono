@@ -17,12 +17,10 @@ import { SseChannelService } from 'src/common/ssechannel/ssechannel.service';
   imports: [
     TypeOrmModule.forFeature([Post]),
     InngestModule,
-    AwsModule,
   ],
   controllers: [PostController, PostSSEController],
   providers: [
     PostService,
-
     PostEventsService,
     TenantContextService,
     TenantInterceptor,

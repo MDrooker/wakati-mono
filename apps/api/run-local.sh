@@ -52,7 +52,6 @@ if [ $? -eq 0 ]; then
     echo -e "${YELLOW}Container Info:${NC}"
     echo "  Name: ${CONTAINER_NAME}"
     echo "  Port: http://localhost:8080"
-    echo "  GraphQL: http://localhost:8080/graphql"
     echo ""
     echo -e "${YELLOW}Useful Commands:${NC}"
     echo "  View logs:    docker logs -f ${CONTAINER_NAME}"

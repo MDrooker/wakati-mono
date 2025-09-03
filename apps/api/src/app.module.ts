@@ -2,19 +2,9 @@ import { join } from 'path';
 import { Module, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CommonModule } from './common/common.module';
-
-import { GraphQLModule } from '@nestjs/graphql';
-
-import { YogaDriver, YogaDriverConfig } from '@graphql-yoga/nestjs';
-
-import {
-  constraintDirective,
-  constraintDirectiveTypeDefs,
-} from 'graphql-constraint-directive';
-
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { Cache } from './common/cache/cache/cache.module';
-import { DateTypeDefinition } from 'graphql-scalars';
+
 import { TypeORMDatabaseModule } from './common/database/database.module';
 import { SupabaseModule } from './common/supabase/supabase.module';
 import { AuthModule } from './common/auth/auth.module';
@@ -98,16 +88,10 @@ const OpenTelemetryModuleConfig = OpenTelemetryModule.forRootAsync({
     Cache,
     // SupabaseModule,
     // AuthModule,
-    // SSEChannelModule,
-   
-    // ServeStaticModule.forRoot({
-    //   rootPath: join(__dirname, '..', 'client'),
-    //   renderPath: '/client',
-    // }),
     // CommonModule,
     // UtilitiesModule,
     UserModule,
-    // TenantModule,
+    TenantModule,
     PostModule,
   ],
   controllers: [],

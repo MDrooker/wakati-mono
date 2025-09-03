@@ -12,7 +12,6 @@ import {
   SimpleSpanProcessor,
 } from '@opentelemetry/sdk-trace-node';
 import { JaegerExporter } from '@opentelemetry/exporter-jaeger';
-import { GraphQLInstrumentation } from '@opentelemetry/instrumentation-graphql';
 import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core';
 
 import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
@@ -54,13 +53,7 @@ const otelSDK = new NodeSDK({
       // see under for available configuration
     }),
     getNodeAutoInstrumentations({
-      '@opentelemetry/instrumentation-fs': { enabled: false },
-      '@opentelemetry/instrumentation-graphql': {
-        enabled: true,
-        mergeItems: true,
-        depth: -1,
-        allowValues: true,
-      },
+      '@opentelemetry/instrumentation-fs': { enabled: false }
     }),
   ],
 });
