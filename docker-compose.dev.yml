@@ -1,15 +1,13 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
-    image: postgres:16-alpine
-    container_name: rockwell-postgres
+    image: postgis/postgis:17-master
+    container_name: nesting-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: rockwell
-      POSTGRES_USER: rockwell_user
-      POSTGRES_PASSWORD: rockwell_password
+      POSTGRES_DB: nesting
+      POSTGRES_USER: nesting_user
+      POSTGRES_PASSWORD: nesting_password
       POSTGRES_MULTIPLE_EXTENSIONS: postgis,uuid-ossp
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -23,201 +21,189 @@ services:
       retries: 5
 
   # Redis Cache
-  redis:
-    image: redis:7-alpine
-    container_name: rockwell-redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes --requirepass rockwell_redis_password
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "rockwell_redis_password", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: rockwell-redis
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   command: redis-server --appendonly yes --requirepass rockwell_redis_password
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "-a", "rockwell_redis_password", "ping"]
+  #     interval: 10s
+  #     timeout: 3s
+  #     retries: 5
 
-  # Inngest Development Server
-  inngest:
-    image: inngest/inngest:latest
-    container_name: rockwell-inngest
-    restart: unless-stopped
-    ports:
-      - "8288:8288"
-    environment:
-      - INNGEST_DEV=true
-      - INNGEST_PORT=8288
-    volumes:
-      - inngest_data:/app/data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8288/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+  # # Inngest Development Server
+  # inngest:
+  #   image: inngest/inngest:latest
+  #   container_name: rockwell-inngest
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8288:8288"
+  #   environment:
+  #     - INNGEST_DEV=true
+  #     - INNGEST_PORT=8288
+  #   volumes:
+  #     - inngest_data:/app/data
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8288/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
 
-  # LocalStack (AWS Services Emulation)
-  localstack:
-    image: localstack/localstack:3.0
-    container_name: rockwell-localstack
-    restart: unless-stopped
-    ports:
-      - "4566:4566"
-    environment:
-      - SERVICES=s3,sns,sqs,mediaconvert,rekognition
-      - DEBUG=1
-      - PERSISTENCE=1
-      - AWS_DEFAULT_REGION=us-east-1
-      - AWS_ACCESS_KEY_ID=test
-      - AWS_SECRET_ACCESS_KEY=test
-      - LOCALSTACK_HOST=localhost.localstack.cloud:4566
-    volumes:
-      - localstack_data:/var/lib/localstack
-      - /var/run/docker.sock:/var/run/docker.sock
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+  # # LocalStack (AWS Services Emulation)
+  # localstack:
+  #   image: localstack/localstack:3.0
+  #   container_name: rockwell-localstack
+  #   restart: unless-stopped
+  #   ports:
+  #     - "4566:4566"
+  #   environment:
+  #     - SERVICES=s3,sns,sqs,mediaconvert,rekognition
+  #     - DEBUG=1
+  #     - PERSISTENCE=1
+  #     - AWS_DEFAULT_REGION=us-east-1
+  #     - AWS_ACCESS_KEY_ID=test
+  #     - AWS_SECRET_ACCESS_KEY=test
+  #     - LOCALSTACK_HOST=localhost.localstack.cloud:4566
+  #   volumes:
+  #     - localstack_data:/var/lib/localstack
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
 
-  # Jaeger (Distributed Tracing)
-  jaeger:
-    image: jaegertracing/all-in-one:1.51
-    container_name: rockwell-jaeger
-    restart: unless-stopped
-    ports:
-      - "16686:16686"  # Jaeger UI
-      - "14268:14268"  # HTTP collector
-      - "14250:14250"  # gRPC collector
-    environment:
-      - COLLECTOR_OTLP_ENABLED=true
-      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
-    volumes:
-      - jaeger_data:/tmp
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:16686/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+  # # Jaeger (Distributed Tracing)
+  # jaeger:
+  #   image: jaegertracing/all-in-one:1.51
+  #   container_name: rockwell-jaeger
+  #   restart: unless-stopped
+  #   ports:
+  #     - "16686:16686"  # Jaeger UI
+  #     - "14268:14268"  # HTTP collector
+  #     - "14250:14250"  # gRPC collector
+  #   environment:
+  #     - COLLECTOR_OTLP_ENABLED=true
+  #     - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+  #   volumes:
+  #     - jaeger_data:/tmp
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:16686/"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
 
-  # Prometheus (Metrics Collection)
-  prometheus:
-    image: prom/prometheus:v2.47.2
-    container_name: rockwell-prometheus
-    restart: unless-stopped
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--storage.tsdb.retention.time=200h'
-      - '--web.enable-lifecycle'
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9090/-/healthy"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+  # # Prometheus (Metrics Collection)
+  # prometheus:
+  #   image: prom/prometheus:v2.47.2
+  #   container_name: rockwell-prometheus
+  #   restart: unless-stopped
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+  #     - prometheus_data:/prometheus
+  #   command:
+  #     - '--config.file=/etc/prometheus/prometheus.yml'
+  #     - '--storage.tsdb.path=/prometheus'
+  #     - '--web.console.libraries=/etc/prometheus/console_libraries'
+  #     - '--web.console.templates=/etc/prometheus/consoles'
+  #     - '--storage.tsdb.retention.time=200h'
+  #     - '--web.enable-lifecycle'
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:9090/-/healthy"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
 
-  # Grafana (Metrics Visualization)
-  grafana:
-    image: grafana/grafana:10.2.0
-    container_name: rockwell-grafana
-    restart: unless-stopped
-    ports:
-      - "3001:3000"
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=grafana_admin_password
-      - GF_USERS_ALLOW_SIGN_UP=false
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
-    depends_on:
-      - prometheus
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+  # # Grafana (Metrics Visualization)
+  # grafana:
+  #   image: grafana/grafana:10.2.0
+  #   container_name: rockwell-grafana
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3001:3000"
+  #   environment:
+  #     - GF_SECURITY_ADMIN_USER=admin
+  #     - GF_SECURITY_ADMIN_PASSWORD=grafana_admin_password
+  #     - GF_USERS_ALLOW_SIGN_UP=false
+  #   volumes:
+  #     - grafana_data:/var/lib/grafana
+  #     - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+  #   depends_on:
+  #     - prometheus
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
 
-  # MinIO (S3-compatible storage for development)
-  minio:
-    image: minio/minio:RELEASE.2023-11-20T22-40-07Z
-    container_name: rockwell-minio
-    restart: unless-stopped
-    ports:
-      - "9000:9000"   # API
-      - "9001:9001"   # Console
-    environment:
-      - MINIO_ROOT_USER=minioadmin
-      - MINIO_ROOT_PASSWORD=minioadmin123
-      - MINIO_BROWSER_REDIRECT_URL=http://localhost:9001
-    volumes:
-      - minio_data:/data
-    command: server /data --console-address ":9001"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
+  # # MinIO (S3-compatible storage for development)
+  # minio:
+  #   image: minio/minio:RELEASE.2023-11-20T22-40-07Z
+  #   container_name: rockwell-minio
+  #   restart: unless-stopped
+  #   ports:
+  #     - "9000:9000"   # API
+  #     - "9001:9001"   # Console
+  #   environment:
+  #     - MINIO_ROOT_USER=minioadmin
+  #     - MINIO_ROOT_PASSWORD=minioadmin123
+  #     - MINIO_BROWSER_REDIRECT_URL=http://localhost:9001
+  #   volumes:
+  #     - minio_data:/data
+  #   command: server /data --console-address ":9001"
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+  #     interval: 30s
+  #     timeout: 20s
+  #     retries: 3
 
-  # Supabase Local Development (optional - can use cloud instead)
-  supabase-db:
-    image: supabase/postgres:15.1.0.147
-    container_name: rockwell-supabase-db
-    restart: unless-stopped
-    profiles: ["supabase"]  # Only start with --profile supabase
-    environment:
-      POSTGRES_HOST: /var/run/postgresql
-      PGPORT: 5432
-      POSTGRES_PORT: 5432
-      PGDATABASE: postgres
-      POSTGRES_DB: postgres
-      PGUSER: supabase_admin
-      POSTGRES_USER: supabase_admin
-      PGPASSWORD: your-super-secret-jwt-token-with-at-least-32-characters-long
-      POSTGRES_PASSWORD: your-super-secret-jwt-token-with-at-least-32-characters-long
-      JWT_SECRET: your-super-secret-jwt-token-with-at-least-32-characters-long
-      JWT_EXP: 3600
-    volumes:
-      - supabase_db_data:/var/lib/postgresql/data
-    ports:
-      - "54322:5432"
+  # # Supabase Local Development (optional - can use cloud instead)
+  # supabase-db:
+  #   image: supabase/postgres:15.1.0.147
+  #   container_name: rockwell-supabase-db
+  #   restart: unless-stopped
+  #   profiles: ["supabase"]  # Only start with --profile supabase
+  #   environment:
+  #     POSTGRES_HOST: /var/run/postgresql
+  #     PGPORT: 5432
+  #     POSTGRES_PORT: 5432
+  #     PGDATABASE: postgres
+  #     POSTGRES_DB: postgres
+  #     PGUSER: supabase_admin
+  #     POSTGRES_USER: supabase_admin
+  #     PGPASSWORD: your-super-secret-jwt-token-with-at-least-32-characters-long
+  #     POSTGRES_PASSWORD: your-super-secret-jwt-token-with-at-least-32-characters-long
+  #     JWT_SECRET: your-super-secret-jwt-token-with-at-least-32-characters-long
+  #     JWT_EXP: 3600
+  #   volumes:
+  #     - supabase_db_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "54322:5432"
 
-  # MailHog (Email testing)
-  mailhog:
-    image: mailhog/mailhog:v1.0.1
-    container_name: rockwell-mailhog
-    restart: unless-stopped
-    ports:
-      - "1025:1025"   # SMTP
-      - "8025:8025"   # Web UI
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8025/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
-  # Nginx (Reverse Proxy for Local Development)
-  nginx:
-    image: nginx:1.25-alpine
-    container_name: rockwell-nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./config/nginx/ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - postgres
-      - redis
-    profiles: ["proxy"]  # Only start with --profile proxy
+
+  # # Nginx (Reverse Proxy for Local Development)
+  # nginx:
+  #   image: nginx:1.25-alpine
+  #   container_name: rockwell-nginx
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./config/nginx/ssl:/etc/nginx/ssl:ro
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   profiles: ["proxy"]  # Only start with --profile proxy
 
 volumes:
   postgres_data:

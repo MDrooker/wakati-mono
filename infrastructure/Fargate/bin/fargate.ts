@@ -16,10 +16,11 @@ const env = {
     region: process.env.CDK_DEFAULT_REGION || process.env.AWS_REGION || 'us-east-1',
 };
 
-const stackName = process.env.STACK_NAME || 'RockwellFargateStack';
-const environment = process.env.ENVIRONMENT || 'dev';
-const ecrStackName = process.env.ECR_STACK_NAME || 'RockwellEcrStack';
+const productName = process.env.PRODUCT || 'API';
 const systemName = process.env.SYSTEM || 'Rockwell';
+const stackName = process.env.STACK_NAME || `${systemName}FargateStack`;
+const environment = process.env.ENVIRONMENT || 'dev';
+const ecrStackName = process.env.ECR_STACK_NAME || `${systemName}EcrStack`;
 
 // Deploy full stack by default
 new Stack(app, stackName, {

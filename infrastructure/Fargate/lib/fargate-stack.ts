@@ -26,8 +26,8 @@ export class Stack extends cdk.Stack {
         let env = (props?.env || {}) as { product?: string, system?: string };
         // Get environment from stack name or default to 'dev'
         const environment = id.includes('prod') ? 'prod' : id.includes('staging') ? 'staging' : 'dev';        // Create ECR repository for Wakati API
-        const productName = env.product || 'wakati';
-        const systemName = env.system || 'api';
+        const productName = env.product || 'api';
+        const systemName = env.system || 'system';
 
         // Import ECR repository ARN from the ECR stack
         const ecrRepositoryUri = cdk.Fn.importValue(`${props.ecrStackName}-RepositoryUri`);

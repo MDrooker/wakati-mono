@@ -15,15 +15,7 @@ RUN apk update && apk add --no-cache \
     build-base \
     python3 \
     make \
-    g++ \
-    # Image processing dependencies
-    vips-dev \
-    libexif-dev \
-    # ImageMagick and HEIC support
-    imagemagick-dev \
-    libheif-dev \
-    # FFmpeg development libraries (if needed for native modules)
-    ffmpeg-dev && \
+    g++ && \
     # Install Node.js dependencies in same layer
     npm install --global pnpm @nestjs/cli && \
     # Install dependencies
@@ -66,13 +58,6 @@ RUN apk update && apk add --no-cache \
     # Essential process management
     dumb-init \
     # Image processing runtime libraries (minimal)
-    vips \
-    libexif \
-    # FFmpeg for video conversion (essential codecs only)
-    ffmpeg \
-    # ImageMagick for image conversion including HEIC support
-    imagemagick \
-    libheif && \
     # Clean up package cache in same layer
     rm -rf /var/cache/apk/* /tmp/* /var/tmp/*
 
@@ -89,17 +74,6 @@ COPY --chown=nestjs:nodejs --from=build /usr/src/app/package.json ./
 COPY --chown=nestjs:nodejs --from=build /usr/src/app/node_modules ./node_modules
 COPY --chown=nestjs:nodejs --from=build /usr/src/app/dist ./dist
 
-# Copy health check script
-COPY --chown=nestjs:nodejs docker-health-check.sh ./
-RUN chmod +x docker-health-check.sh
-
-# Create temporary directory for conversions
-RUN mkdir -p /tmp/conversions && \
-    chown -R nestjs:nodejs /tmp/conversions
-
-# Add health check for conversion tools
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD ./docker-health-check.sh || exit 1
 
 # Switch to non-root user
 USER nestjs

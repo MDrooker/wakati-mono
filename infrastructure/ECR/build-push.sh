@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Rockwell Multi-Platform Docker Build and Push Script for ECR
+# Wakati Multi-Platform Docker Build and Push Script for ECR
 # This script builds the API Docker image for multiple architectures (Apple Silicon + AMD64)
-# and pushes to the ECR repository created by the Rockwell-ECR CDK stack
+# and pushes to the ECR repository created by the Wakati-ECR CDK stack
 
 set -e  # Exit on any error
 
@@ -16,12 +16,12 @@ NC='\033[0m' # No Color
 # Default values
 ENVIRONMENT=${ENVIRONMENT:-"dev"}
 AWS_REGION=${AWS_REGION:-"us-east-1"}
-ECR_STACK_NAME=${ECR_STACK_NAME:-"RockwellEcrStack"}
+ECR_STACK_NAME=${ECR_STACK_NAME:-"WakatiEcrStack"}
 PLATFORM=${PLATFORM:-"linux/amd64,linux/arm64"}
 TAG=${TAG:-"latest"}
 DOCKERFILE=${DOCKERFILE:-"Dockerfile"}
 
-echo -e "${BLUE}🐳 Rockwell Multi-Platform Docker Build${NC}"
+echo -e "${BLUE}🐳 Wakati Multi-Platform Docker Build${NC}"
 echo -e "${BLUE}=====================================${NC}"
 echo -e "Environment: ${GREEN}${ENVIRONMENT}${NC}"
 echo -e "AWS Region: ${GREEN}${AWS_REGION}${NC}"
@@ -67,17 +67,17 @@ check_prerequisites() {
 # Function to get ECR repository URI
 get_ecr_uri() {
     echo -e "${YELLOW}Getting ECR repository URI...${NC}"
-    
+    echo -e "${BLUE}   Stack Name: ${ECR_STACK_NAME}${NC}"
     ECR_URI=$(aws cloudformation describe-stacks \
         --stack-name "${ECR_STACK_NAME}" \
         --region "${AWS_REGION}" \
         --query 'Stacks[0].Outputs[?OutputKey==`RepositoryUri`].OutputValue' \
         --output text 2>/dev/null)
-    
+    echo -e "${BLUE}   ECR URI: ${ECR_URI}${NC}"
     if [ -z "$ECR_URI" ] || [ "$ECR_URI" = "None" ]; then
         echo -e "${RED}❌ Could not find ECR repository URI${NC}"
         echo "Make sure the ECR stack is deployed:"
-        echo "  cd infrastructure/Rockwell-ECR"
+        echo "  cd infrastructure/ECR"
         echo "  pnpm run deploy"
         exit 1
     fi
@@ -105,7 +105,7 @@ setup_buildx() {
     echo -e "${YELLOW}Setting up Docker buildx...${NC}"
     
     # Create buildx builder if it doesn't exist
-    BUILDER_NAME="rockwell-multiarch-builder"
+    BUILDER_NAME="multiarch-builder"
     if ! docker buildx inspect $BUILDER_NAME > /dev/null 2>&1; then
         echo -e "${YELLOW}Creating buildx builder: ${BUILDER_NAME}${NC}"
         docker buildx create \
@@ -133,7 +133,7 @@ build_and_push() {
     # Change to API directory
     if [ ! -d "../../apps/api" ]; then
         echo -e "${RED}❌ API directory not found at ../../apps/api${NC}"
-        echo "Please run this script from infrastructure/Rockwell-ECR/"
+        echo "Please run this script from infrastructure/ECR/"
         exit 1
     fi
     
@@ -216,18 +216,18 @@ show_next_steps() {
     echo -e "   docker buildx imagetools inspect ${ECR_URI}:${TAG}"
     echo ""
     echo -e "2. ${BLUE}Deploy to ECS Fargate:${NC}"
-    echo -e "   cd ../Rockwell-Fargate"
+    echo -e "   cd ../Fargate"
     echo -e "   pnpm run deploy"
     echo ""
     echo -e "3. ${BLUE}Update existing ECS service:${NC}"
     echo -e "   aws ecs update-service \\"
-    echo -e "     --cluster rockwell-cluster-${ENVIRONMENT} \\"
-    echo -e "     --service rockwell-api-${ENVIRONMENT} \\"
+    echo -e "     --cluster wakati-cluster-${ENVIRONMENT} \\"
+    echo -e "     --service wakati-api-${ENVIRONMENT} \\"
     echo -e "     --force-new-deployment"
     echo ""
     echo -e "4. ${BLUE}Test the deployed API:${NC}"
     echo -e "   # Get API Gateway URL from Fargate stack outputs"
-    echo -e "   curl \$(aws cloudformation describe-stacks --stack-name RockwellFargateStack --query 'Stacks[0].Outputs[?OutputKey==\`ApiGatewayUrl\`].OutputValue' --output text)/health"
+    echo -e "   curl \$(aws cloudformation describe-stacks --stack-name WakatiFargateStack --query 'Stacks[0].Outputs[?OutputKey==\`ApiGatewayUrl\`].OutputValue' --output text)/health"
 }
 
 # Function to show usage
@@ -240,7 +240,7 @@ show_usage() {
     echo "  -t, --tag TAG           Docker image tag [default: latest]"
     echo "  -p, --platform PLATFORM Platform for build [default: linux/amd64,linux/arm64]"
     echo "  -f, --dockerfile FILE   Dockerfile to use [default: Dockerfile]"
-    echo "  --ecr-stack NAME        ECR stack name [default: RockwellEcrStack]"
+    echo "  --ecr-stack NAME        ECR stack name [default: WakatiEcrStack]"
     echo "  --skip-verify           Skip image verification step"
     echo "  -h, --help              Show this help message"
     echo ""
