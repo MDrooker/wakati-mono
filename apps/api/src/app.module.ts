@@ -101,7 +101,7 @@ const OpenTelemetryModuleConfig = OpenTelemetryModule.forRootAsync({
 export class ApplicationModule implements OnModuleInit {
   onModuleInit() {
     // Check for critical environment variables
-    const criticalEnvVars = ['DATABASE_URL', 'PORT', 'SYSTEM', 'PRODUCT'];
+    const criticalEnvVars = ['PORT', 'SYSTEM', 'PRODUCT', 'COMPANY'];
     criticalEnvVars.forEach((envVar) => {
       if (!process.env[envVar]) {
         logger.warn(`⚠️  Environment variable ${envVar} is not set`);

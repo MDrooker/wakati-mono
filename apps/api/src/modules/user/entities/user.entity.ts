@@ -16,6 +16,7 @@ import { BaseEntity } from 'src/common/database/entities/base.entity';
 
 const nanoid = customAlphabet('1234567890abcdef', 5);
 const applicationName = process.env.SYSTEM || 'wakati';
+const companyName = process.env.COMPANY || 'weather';
 @Entity('user', { schema: applicationName })
 export class User extends BaseEntity {
   @Column()
@@ -71,9 +72,8 @@ export class User extends BaseEntity {
   tenant: any;
 
   static generateUserUrn(): string {
-    return `nesting:${applicationName}.user:${nanoid()}`;
+    return `${companyName}:${applicationName}.user:${nanoid()}`;
   }
-
   @BeforeUpdate()
   @BeforeInsert()
   async persistHook(): Promise<void> {

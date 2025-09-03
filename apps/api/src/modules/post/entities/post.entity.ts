@@ -14,7 +14,8 @@ import {
 import { customAlphabet } from 'nanoid';
 import { BaseEntity } from 'src/common/database/entities/base.entity';
 const nanoid = customAlphabet('1234567890abcdef', 5);
-
+const companyName = process.env.COMPANY || 'weather';
+const applicationName = process.env.SYSTEM || 'thoth';
 export enum PostType {
   TEXT = 'text',
   LINK = 'link',
@@ -182,7 +183,7 @@ export class Post extends BaseEntity {
   }
 
   static generatePostUrn(): string {
-    return `nesting:rockwell.post:${nanoid()}`;
+    return `${companyName}:${applicationName}.post:${nanoid()}`;
   }
 
   // Helper methods

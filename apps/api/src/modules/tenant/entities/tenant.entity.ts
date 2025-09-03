@@ -13,7 +13,8 @@ import { customAlphabet } from 'nanoid';
 import { BaseEntity } from 'src/common/database/entities/base.entity';
 
 const nanoid = customAlphabet('1234567890abcdef', 5);
-const applicationName = process.env.SYSTEM || 'wakati';
+const companyName = process.env.COMPANY || 'weather';
+const applicationName = process.env.SYSTEM || 'thoth';
 @Entity('tenant', { schema: applicationName })
 export class Tenant extends BaseEntity {
   @Column()
@@ -43,7 +44,7 @@ export class Tenant extends BaseEntity {
 
 
   static generateTenanturn(): string {
-    return `nesting:${applicationName}.tenant:${nanoid()}`;
+    return `${companyName}:${applicationName}.tenant:${nanoid()}`;
   }
 
   @BeforeUpdate()
